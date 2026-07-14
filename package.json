@@ -16,7 +16,6 @@
   "dependencies": {
     "@hintay/vue-video-background": "^3.0.7",
     "@mdi/font": "7.4.47",
-    "@nuxt/content": "^3.15.0",
     "@nuxtjs/i18n": "^10.2.3",
     "nuxt": "^4.4.2",
     "pinia": "^3.0.4",

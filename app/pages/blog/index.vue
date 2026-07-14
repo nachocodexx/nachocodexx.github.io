@@ -1,7 +1,8 @@
 <script setup lang="ts">
   const { navigationItems } = usePortfolioData()
 
-  const { data: posts } = await useAsyncData('blog-index', () => queryCollection('blog').order('date', 'DESC').all())
+  // const { data: posts } = await useAsyncData('blog-index', () => queryCollection('blog').order('date', 'DESC').all())
+  const posts:any[] = []
 
   function formatDate (value: string) {
     return new Intl.DateTimeFormat('en', {
