@@ -1,0 +1,50 @@
+import {
+  ABOUT_SUMMARY,
+  CERTIFICATES,
+  getEntriesForSkill,
+  getProjectBySlug,
+  getProjectsByTitles,
+  getSkillBySlug,
+  getSkillCategoryBySlug,
+  isSkillSlug,
+  NAVIGATION_ITEMS,
+  PAPERS,
+  PORTFOLIO_SKILLS,
+  PROJECT_GROUPS,
+  PROJECTS,
+  SKILL_ASSETS,
+  SKILL_CATEGORIES,
+} from '~~/utils/portfolioContent'
+
+export type {
+  CertificateEntry,
+  NavigationItem,
+  PaperEntry,
+  ProjectEntry,
+  ProjectGalleryImage,
+  ProjectGroup,
+  SkillAssetEntry,
+  SkillCategory,
+  SkillItem,
+  SkillSlug,
+} from '~~/utils/portfolioContent'
+
+export function usePortfolioData () {
+  return {
+    aboutSummary: ABOUT_SUMMARY,
+    certificates: CERTIFICATES,
+    getEntriesForSkill,
+    getProjectBySlug,
+    getProjectsByTitles,
+    getSkillBySlug,
+    getSkillCategoryBySlug,
+    isSkillSlug,
+    navigationItems: NAVIGATION_ITEMS,
+    papers: PAPERS,
+    projectGroups: PROJECT_GROUPS,
+    projects: PROJECTS,
+    skillAssets: SKILL_ASSETS,
+    skillCategories: SKILL_CATEGORIES,
+    skills: PORTFOLIO_SKILLS,
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+.data/
+.vscode/
+.nuxt/
+.output/
+.ruler/
+AGENTS.md
+*.txt
