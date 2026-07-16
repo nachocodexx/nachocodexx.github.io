@@ -8,27 +8,32 @@
   const heroPosterSrc = `${baseURL}hero_image.png`
 
   const trackRef = ref<HTMLElement | null>(null)
-  const chipRef = ref<HTMLElement | null>(null)
-  const revealDistance = ref(1)
+  const contentBodyRef = ref<HTMLElement | null>(null)
+  const revealDistance = ref(0)
+  const holdDistance = ref(0)
+  const entranceOffset = ref(0)
+  const safeTop = ref(112)
   const revealProgress = ref(0)
+  const isParallaxEnabled = ref(false)
+  const isReady = ref(false)
   const reducedMotion = ref(false)
 
   let animationFrame = 0
+  let entranceFrame = 0
   let resizeObserver: ResizeObserver | null = null
+  let motionPreference: MediaQueryList | null = null
 
   const trackStyle = computed<CSSProperties>(() => ({
-    '--hero-reveal-distance': `${revealDistance.value}px`,
-  }))
-
-  const contentStyle = computed<CSSProperties>(() => ({
+    '--hero-safe-top': `${safeTop.value}px`,
+    '--hero-scroll-distance': `${revealDistance.value + holdDistance.value}px`,
     '--hero-content-opacity': revealProgress.value,
-    '--hero-content-translate': `${-revealDistance.value * revealProgress.value}px`,
+    '--hero-content-translate': `${entranceOffset.value * (1 - revealProgress.value)}px`,
   }))
 
   function updateRevealProgress () {
     animationFrame = 0
 
-    if (reducedMotion.value) {
+    if (reducedMotion.value || !isParallaxEnabled.value) {
       revealProgress.value = 1
       return
     }
@@ -39,7 +44,9 @@
       return
     }
 
-    revealProgress.value = Math.min(1, Math.max(0, -track.getBoundingClientRect().top / revealDistance.value))
+    const rawProgress = Math.min(1, Math.max(0, -track.getBoundingClientRect().top / revealDistance.value))
+
+    revealProgress.value = 1 - (1 - rawProgress) ** 3
   }
 
   function requestRevealUpdate () {
@@ -48,44 +55,69 @@
     }
   }
 
-  function measureRevealDistance () {
-    const chip = chipRef.value?.$el as HTMLElement | undefined
+  function measureHero () {
+    const contentBody = contentBodyRef.value
     const navigation = document.querySelector<HTMLElement>('.v-app-bar')
 
-    if (!chip || !navigation) {
+    if (!contentBody || !navigation) {
       return
     }
 
-    const currentTranslation = -revealDistance.value * revealProgress.value
-    const chipTopWithoutTranslation = chip.getBoundingClientRect().top - currentTranslation
-    const x = 16
-    const targetTop = navigation.getBoundingClientRect().bottom + x
+    const viewportHeight = window.innerHeight
+    const navigationBottom = Math.ceil(navigation.getBoundingClientRect().bottom)
+    const topClearance = 24
+    const bottomClearance = 32
+    const availableHeight = viewportHeight - navigationBottom - topClearance - bottomClearance
+    const contentHeight = Math.ceil(contentBody.getBoundingClientRect().height)
 
-    revealDistance.value = Math.max(1, Math.round(chipTopWithoutTranslation - targetTop))
+    safeTop.value = navigationBottom + topClearance
+    revealDistance.value = Math.min(420, Math.max(260, Math.round(viewportHeight * 0.4)))
+    holdDistance.value = Math.min(96, Math.max(64, Math.round(viewportHeight * 0.1)))
+    entranceOffset.value = Math.min(240, Math.max(120, Math.round(viewportHeight * 0.22)))
+    isParallaxEnabled.value = !reducedMotion.value
+      && window.innerWidth > 960
+      && contentHeight <= availableHeight
+
     updateRevealProgress()
   }
 
+  function handleMotionPreference (event: MediaQueryListEvent) {
+    reducedMotion.value = event.matches
+    measureHero()
+  }
+
   onMounted(() => {
-    reducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    reducedMotion.value = motionPreference.matches
 
-    measureRevealDistance()
+    measureHero()
     window.addEventListener('scroll', requestRevealUpdate, { passive: true })
-    window.addEventListener('resize', measureRevealDistance)
+    window.addEventListener('resize', measureHero)
+    motionPreference.addEventListener('change', handleMotionPreference)
 
-    resizeObserver = new ResizeObserver(measureRevealDistance)
+    resizeObserver = new ResizeObserver(measureHero)
 
-    if (trackRef.value) {
-      resizeObserver.observe(trackRef.value)
+    if (contentBodyRef.value) {
+      resizeObserver.observe(contentBodyRef.value)
     }
+
+    entranceFrame = window.requestAnimationFrame(() => {
+      isReady.value = true
+    })
   })
 
   onUnmounted(() => {
     window.removeEventListener('scroll', requestRevealUpdate)
-    window.removeEventListener('resize', measureRevealDistance)
+    window.removeEventListener('resize', measureHero)
+    motionPreference?.removeEventListener('change', handleMotionPreference)
     resizeObserver?.disconnect()
 
     if (animationFrame) {
       window.cancelAnimationFrame(animationFrame)
+    }
+
+    if (entranceFrame) {
+      window.cancelAnimationFrame(entranceFrame)
     }
   })
 </script>
@@ -94,6 +126,10 @@
   <section
     ref="trackRef"
     class="hero-scroll-track motif-border"
+    :class="{
+      'hero-scroll-track--parallax': isParallaxEnabled,
+      'hero-scroll-track--ready': isReady,
+    }"
     :style="trackStyle"
   >
     <div class="hero-shell">
@@ -121,99 +157,100 @@
 
       <v-container
         class="hero-shell__content position-relative"
-        :class="{ 'hero-shell__content--interactive': revealProgress > 0.02 }"
+        :class="{ 'hero-shell__content--interactive': !isParallaxEnabled || revealProgress > 0.02 }"
         max-width="1180"
-        :style="contentStyle"
       >
-        <v-row align="center">
-          <v-col cols="12" lg="8">
-            <div class="hero-shell__copy">
-              <v-chip ref="chipRef" class="hero-chip text-uppercase" color="primary" variant="tonal">
-                Personal portfolio
-              </v-chip>
+        <div ref="contentBodyRef" class="hero-shell__body">
+          <v-row align="center">
+            <v-col cols="12" lg="8">
+              <div class="hero-shell__copy">
+                <v-chip class="hero-chip text-uppercase" color="primary" variant="tonal">
+                  Personal portfolio
+                </v-chip>
 
-              <h1 class="hero-shell__name">
-                Ignacio Castillo
-              </h1>
+                <h1 class="hero-shell__name">
+                  Ignacio Castillo
+                </h1>
 
-              <div class="hero-shell__roles">
-                <span>Software Engineer</span>
-                <!-- <span class="hero-shell__separator" /> -->
-                <span class="hero-shell__separator" />
-                <span>PhD in Computer Science</span>
-              </div>
-
-              <p class="hero-shell__summary">
-                Building secure, resilient systems with a focus on software architecture, distributed platforms, and the bridge between research and engineering practice.
-              </p>
-
-              <div class="d-flex flex-wrap ga-4">
-                <v-btn
-                  class="text-none"
-                  color="primary"
-                  rounded="xl"
-                  size="large"
-                  to="/#projects"
-                >
-                  View projects
-                </v-btn>
-
-                <v-btn
-                  class="text-none"
-                  rounded="xl"
-                  size="large"
-                  variant="tonal"
-                  @click="openAssistant()"
-                >
-                  <span class="d-inline-flex align-center ga-3">
-                    <AssistantAvatar alt="AI assistant avatar" size="sm" />
-                    <span>Talk with AI assistant</span>
-                  </span>
-                </v-btn>
-
-                <v-btn
-                  class="text-none"
-                  rounded="xl"
-                  size="large"
-                  to="/blog"
-                  variant="outlined"
-                >
-                  Read the blog
-                </v-btn>
-              </div>
-            </div>
-          </v-col>
-
-          <v-col cols="12" lg="4">
-            <v-card class="hero-shell__panel glass-card" rounded="xl">
-              <div class="hero-shell__panel-grid">
-                <div>
-                  <p class="hero-shell__panel-label">
-                    Focus
-                  </p>
-
-                  <strong>Distributed software systems</strong>
+                <div class="hero-shell__roles">
+                  <span>Software Engineer</span>
+                  <!-- <span class="hero-shell__separator" /> -->
+                  <span class="hero-shell__separator" />
+                  <span>PhD in Computer Science</span>
                 </div>
 
-                <div>
-                  <p class="hero-shell__panel-label">
-                    Teaching
-                  </p>
+                <p class="hero-shell__summary">
+                  Building secure, resilient systems with a focus on software architecture, distributed platforms, and the bridge between research and engineering practice.
+                </p>
 
-                  <strong>Professor and mentor</strong>
-                </div>
+                <div class="d-flex flex-wrap ga-4">
+                  <v-btn
+                    class="text-none"
+                    color="primary"
+                    rounded="xl"
+                    size="large"
+                    to="/#projects"
+                  >
+                    View projects
+                  </v-btn>
 
-                <div>
-                  <p class="hero-shell__panel-label">
-                    Delivery
-                  </p>
+                  <v-btn
+                    class="text-none"
+                    rounded="xl"
+                    size="large"
+                    variant="tonal"
+                    @click="openAssistant()"
+                  >
+                    <span class="d-inline-flex align-center ga-3">
+                      <AssistantAvatar alt="AI assistant avatar" size="sm" />
+                      <span>Talk with AI assistant</span>
+                    </span>
+                  </v-btn>
 
-                  <strong>Architecture, security, and product execution</strong>
+                  <v-btn
+                    class="text-none"
+                    rounded="xl"
+                    size="large"
+                    to="/blog"
+                    variant="outlined"
+                  >
+                    Read the blog
+                  </v-btn>
                 </div>
               </div>
-            </v-card>
-          </v-col>
-        </v-row>
+            </v-col>
+
+            <v-col cols="12" lg="4">
+              <v-card class="hero-shell__panel glass-card" rounded="xl">
+                <div class="hero-shell__panel-grid">
+                  <div>
+                    <p class="hero-shell__panel-label">
+                      Focus
+                    </p>
+
+                    <strong>Distributed software systems</strong>
+                  </div>
+
+                  <div>
+                    <p class="hero-shell__panel-label">
+                      Teaching
+                    </p>
+
+                    <strong>Professor and mentor</strong>
+                  </div>
+
+                  <div>
+                    <p class="hero-shell__panel-label">
+                      Delivery
+                    </p>
+
+                    <strong>Architecture, security, and product execution</strong>
+                  </div>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
       </v-container>
     </div>
   </section>
@@ -221,22 +258,33 @@
 
 <style scoped>
   .hero-scroll-track {
-    height: calc(100vh + var(--hero-reveal-distance));
-    height: calc(100dvh + var(--hero-reveal-distance));
+    overflow: clip;
     position: relative;
   }
 
   .hero-shell {
     align-items: center;
     display: flex;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .hero-scroll-track--parallax {
+    height: calc(100vh + var(--hero-scroll-distance));
+    height: calc(100dvh + var(--hero-scroll-distance));
+  }
+
+  .hero-scroll-track--parallax .hero-shell {
     height: 100vh;
     height: 100dvh;
     min-height: 100vh;
     min-height: 100dvh;
-    overflow: hidden;
     position: sticky;
     top: 0;
-    width: 100%;
   }
 
   .hero-shell__video,
@@ -266,20 +314,40 @@
   }
 
   .hero-shell__content {
-    opacity: var(--hero-content-opacity);
-    /* margin-top:200px; */
-    /* background:red; */
-    padding-bottom: 72px;
-    padding-top: 72px;
-    /* padding-top: 224px; */
+    opacity: 0;
+    padding-bottom: 56px;
+    padding-top: var(--hero-safe-top);
     pointer-events: none;
-    transform: translateY(var(--hero-content-translate));
-    will-change: opacity, transform;
+    transform: translateY(48px);
+    transition:
+      opacity 700ms ease,
+      transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
     z-index: 1;
+  }
+
+  .hero-scroll-track--ready:not(.hero-scroll-track--parallax) .hero-shell__content {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-scroll-track--parallax .hero-shell__content {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    opacity: var(--hero-content-opacity);
+    padding-bottom: 32px;
+    padding-top: var(--hero-safe-top);
+    transform: translateY(var(--hero-content-translate));
+    transition: none;
+    will-change: opacity, transform;
   }
 
   .hero-shell__content--interactive {
     pointer-events: auto;
+  }
+
+  .hero-shell__body {
+    width: 100%;
   }
 
   .hero-shell__copy {
@@ -344,21 +412,9 @@
   }
 
   @media (max-width: 960px) {
-    .hero-scroll-track {
-      height: auto;
-    }
-
-    .hero-shell {
-      height: auto;
-      min-height: 100vh;
-      min-height: 100svh;
-      position: relative;
-    }
-
     .hero-shell__content {
       padding-bottom: 56px;
       padding-top: clamp(220px, 35svh, 360px);
-      transform: none;
     }
 
     .hero-shell__panel {
@@ -422,6 +478,7 @@
     .hero-shell__content {
       opacity: 1;
       pointer-events: auto;
+      transition: none;
       transform: none;
     }
   }

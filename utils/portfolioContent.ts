@@ -24,6 +24,8 @@ export const PORTFOLIO_SKILL_SLUGS = [
   'linux',
   'agile',
   'project-management',
+  'electronics',
+  'kurrentdb',
 ] as const
 
 export type SkillSlug = typeof PORTFOLIO_SKILL_SLUGS[number]
@@ -67,6 +69,10 @@ export interface ProjectGroup {
   slug: string
   title: string
   description: string
+  highlightTag?: string
+  funding?: string
+  technologies?: string[]
+  links?: ProjectLink[]
   projects: ProjectEntry[]
 }
 
@@ -131,7 +137,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
 
 export const SKILL_CATEGORIES: SkillCategory[] = [
   {
-    title: 'Core systems',
+    title: 'Core skills',
     description: 'The broad engineering areas that shape architecture decisions, system behavior, and long-term maintainability.',
     items: [
       { slug: 'distributed-systems', icon: 'mdi-graph-outline', name: 'Distributed Systems', level: 95, note: 'Designing resilient services, coordination flows, and runtime trade-offs.' },
@@ -144,7 +150,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
     ],
   },
   {
-    title: 'Languages',
+    title: 'Programming Languages',
     description: 'Primary languages used across systems engineering, backend development, data work, and interactive products.',
     items: [
       { slug: 'python', icon: 'mdi-language-python', name: 'Python', level: 94, note: 'Backend services, automation, data processing, and research-oriented tooling.' },
@@ -172,6 +178,7 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
       { slug: 'postgresql', icon: 'mdi-elephant', name: 'PostgreSQL', level: 89, note: 'Transactional workloads, schema design, and dependable data services.' },
       { slug: 'mongodb', icon: 'mdi-leaf', name: 'MongoDB', level: 81, note: 'Document-oriented storage when flexibility and fast iteration are priorities.' },
       { slug: 'redis', icon: 'mdi-lightning-bolt-outline', name: 'Redis', level: 82, note: 'Caching, ephemeral state, and low-latency coordination patterns.' },
+      {slug:'kurrentdb', icon:'mdi-database-clock-outline', name:'KurrentDB', level: 70, note:'It is an event-driven, time-series database designed for high-throughput data ingestion and real-time analytics.'},
     ],
   },
   {
@@ -181,8 +188,10 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
       { slug: 'cybersecurity', icon: 'mdi-shield-lock-outline', name: 'Cybersecurity', level: 86, note: 'Assessing risk, protecting systems, and responding to security events.' },
       { slug: 'git', icon: 'mdi-source-branch', name: 'Git', level: 92, note: 'Version control and collaborative development workflows across complex codebases.' },
       { slug: 'linux', icon: 'mdi-linux', name: 'Linux', level: 88, note: 'Command-line tooling, system administration, and secure development environments.' },
-      { slug: 'agile', icon: 'mdi-sync', name: 'Agile', level: 82, note: 'Iterative planning and delivery practices for collaborative product development.' },
+      // { slug: 'agile', icon: 'mdi-sync', name: 'Agile', level: 82, note: 'Iterative planning and delivery practices for collaborative product development.' },
       { slug: 'project-management', icon: 'mdi-clipboard-check-outline', name: 'Project Management', level: 80, note: 'Organizing scope, delivery, and team coordination around clear outcomes.' },
+      {slug:'electronics', icon:'mdi-chip', name:'Electronics', level: 50, note:'Microcontrollers, embedded systems, and circuit design.' },
+
     ],
   },
 ]
@@ -264,6 +273,100 @@ function createProjectEntry (
 }
 
 export const PROJECT_GROUPS: ProjectGroup[] = [
+    {
+    slug: 'jub-ecosystem',
+    title: 'JUB ecosystem',
+    description: 'A national data hub designed for data aggregation, distribution, and search operations using the STORI model to organize information into observatories, catalogs, and products.',
+    highlightTag: 'Funded research project',
+    funding: 'Supported by the Secretaría de Ciencia, Humanidades, Tecnología e Innovación (SECIHTI) of Mexico, grant number MADTEC-2025-M-478.',
+    technologies: ['Python', 'FastAPI', 'MongoDB', 'Redis', 'Vue'],
+    links: [{ label: 'Visit JUB', href: 'https://jub.tamps.cinvestav.mx/' }],
+    projects: [
+      createProjectEntry(
+        {
+          slug: 'jub-ecosystem',
+          title: 'JUB ecosystem',
+        },
+        {
+          slug: 'jub-api',
+          title: 'JUB API',
+          type: 'Backend REST API',
+          technologies: ['Python', 'FastAPI', 'MongoDB', 'Redis'],
+          description: 'Core backend application managing the data hub entities. It features a custom query domain-specific language (DSL) to filter and aggregate records.',
+          developmentYear: '2025 to present',
+          links: [
+            {
+              label: 'Jub Platform',
+              href: 'https://jub.tamps.cinvestav.mx/',
+            },
+            { 
+              label: 'GitHub repository', 
+              href: 'https://github.com/jub-ecosystem/jub-api' 
+            },
+            {
+              label: 'Documentation site',
+              href: 'https://jub-ecosystem.github.io/jub-api/',
+            }
+          ],
+          relatedProjects: ['JUB client', 'JUB web'],
+          logo: { 
+            src: '/projects/jub-api/logo.svg',
+            label: 'JUB' 
+          },
+          additionalSkills: ['software-architecture', 'distributed-systems'],
+        },
+      ),
+      createProjectEntry(
+        {
+          slug: 'jub-ecosystem',
+          title: 'JUB ecosystem',
+        },
+        {
+          slug: 'jub-client',
+          title: 'JUB client',
+          type: 'Developer tooling and SDK',
+          technologies: ['Python'],
+          description: 'Fully-typed, asynchronous Python interface to interact with the data hub, mapping entities to Pydantic models with automated authentication wrapper tools.',
+          developmentYear: '2025 to present',
+          links: [
+            {label: 'Jub Platform', href: 'https://jub.tamps.cinvestav.mx/' },
+            { label: 'GitHub repository', href: 'https://github.com/jub-ecosystem/jub-client' },
+            {label: 'Documentation site', href: 'https://jub-ecosystem.github.io/jub-client/' }
+          ],
+          relatedProjects: ['JUB API', 'JUB web', 'Xolo API'],
+          logo: { 
+            src: '/projects/jub-client/logo.svg',
+            label: 'JUB' 
+          },
+          additionalSkills: ['software-architecture'],
+        },
+      ),
+      createProjectEntry(
+        {
+          slug: 'jub-ecosystem',
+          title: 'JUB ecosystem',
+        },
+        {
+          slug: 'jub-web',
+          title: 'JUB web',
+          type: 'Front-end UI',
+          technologies: ['Vue'],
+          description: 'The official web portal providing visual access to the national data hub features for end users.',
+          developmentYear: '2025 to present',
+          links: [
+            {label: 'Jub Platform', href: 'https://jub.tamps.cinvestav.mx/' },
+            { label: 'GitHub repository', href: 'https://github.com/jub-ecosystem/jub-web' },
+          ],
+          relatedProjects: ['JUB API', 'JUB client'],
+          logo: { 
+            src: '/projects/jub-web/logo.svg',
+            label: 'JUB' 
+          },
+          additionalSkills: ['software-architecture'],
+        },
+      ),
+    ],
+  },
   {
     slug: 'muyal-and-oca-ecosystem',
     title: 'Muyal-Ilal and OCA Ecosystem',
@@ -385,7 +488,7 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         {
           slug: 'xolo-api',
           title: 'Xolo API',
-          type: 'Identity and access management (IAM) API and multi-tenant SaaS service',
+          type: 'IAM API and multi-tenant SaaS service',
           technologies: ['FastAPI', 'MongoDB', 'Redis', 'Python', 'Poetry', 'Docker', 'Zensical'],
           description: 'An identity and access management service that unifies four access control models: Access Control Lists (ACL), Attribute-Based Access Control (ABAC), Role-Based Access Control (RBAC), and Next Generation Access Control (NGAC). Designed as a multi-tenant platform, it isolates users, scopes, policies, and licenses within account boundaries using account-scoped API keys. The system architecture follows a strict Domain-Driven Design (DDD) per-module pattern, utilizing functional error handling (Result and Option types) to keep controllers thin.',
           developmentYear: '2024 to 2026',
@@ -664,47 +767,48 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
     ],
   },
 
-  {
-    slug: 'javascript-and-frontend-content',
-    title: 'JavaScript and frontend content',
-    description: 'Early frontend and legacy JavaScript work that established product delivery foundations and interface thinking.',
-    projects: [
-      createProjectEntry(
-        {
-          slug: 'javascript-and-frontend-content',
-          title: 'JavaScript and frontend content',
-        },
-        {
-          slug: 'lottery-game',
-          title: 'Lottery game',
-          type: 'Legacy application',
-          technologies: ['JavaScript'],
-          description: 'A lottery game application built as a legacy project.',
-          developmentYear: '7 years ago',
-          links: [{ label: 'GitHub repository' }],
-          logo: { label: 'LG' },
-          additionalSkills: ['ui-design'],
-        },
-      ),
-      createProjectEntry(
-        {
-          slug: 'javascript-and-frontend-content',
-          title: 'JavaScript and frontend content',
-        },
-        {
-          slug: 'describapp',
-          title: 'DescribApp',
-          type: 'Legacy application',
-          technologies: ['JavaScript'],
-          description: 'A car insurance application designed for a specific project requirement.',
-          developmentYear: 'Legacy',
-          links: [{ label: 'GitHub repository' }],
-          logo: { label: 'DA' },
-          additionalSkills: ['ui-design'],
-        },
-      ),
-    ],
-  },
+  // {
+  //   slug: 'javascript-and-frontend-content',
+  //   title: 'JavaScript and frontend content',
+  //   description: 'Early frontend and legacy JavaScript work that established product delivery foundations and interface thinking.',
+  //   projects: [
+  //     createProjectEntry(
+  //       {
+  //         slug: 'javascript-and-frontend-content',
+  //         title: 'JavaScript and frontend content',
+  //       },
+  //       {
+  //         slug: 'lottery-game',
+  //         title: 'Lottery game',
+  //         type: 'Legacy application',
+  //         technologies: ['JavaScript'],
+  //         description: 'A lottery game application built as a legacy project.',
+  //         developmentYear: '7 years ago',
+  //         links: [{ label: 'GitHub repository' }],
+  //         logo: { label: 'LG' },
+  //         additionalSkills: ['ui-design'],
+  //       },
+  //     ),
+  //     createProjectEntry(
+  //       {
+  //         slug: 'javascript-and-frontend-content',
+  //         title: 'JavaScript and frontend content',
+  //       },
+  //       {
+  //         slug: 'describapp',
+  //         title: 'DescribApp',
+  //         type: 'Legacy application',
+  //         technologies: ['JavaScript'],
+  //         description: 'A car insurance application designed for a specific project requirement.',
+  //         developmentYear: 'Legacy',
+  //         links: [{ label: 'GitHub repository' }],
+  //         logo: { label: 'DA' },
+  //         additionalSkills: ['ui-design'],
+  //       },
+  //     ),
+  //   ],
+  // },
+
 ]
 
 export const PROJECTS: ProjectEntry[] = PROJECT_GROUPS.flatMap(group => group.projects)

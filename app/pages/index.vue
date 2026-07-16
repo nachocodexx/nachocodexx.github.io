@@ -33,7 +33,7 @@
     <PortfolioNavigation :items="navigationItems" />
     <PortfolioHero />
 
-    <v-container class="portfolio-shell" max-width="1180">
+    <v-container class="portfolio-shell portfolio-shell--hero-overlap" max-width="1180">
       <div class="section-stack">
         <PortfolioSection
           id="about"
@@ -124,6 +124,10 @@
 </template>
 
 <style scoped>
+  .portfolio-shell--hero-overlap {
+    margin-top: clamp(-200px, -18dvh, -128px);
+  }
+
   .about-card {
     max-width: 100%;
     min-width: 0;
@@ -144,6 +148,12 @@
     min-width: 0;
     padding-left: 24px;
     width: 100%;
+  }
+
+  @media (max-width: 960px) {
+    .portfolio-shell--hero-overlap {
+      margin-top: 0;
+    }
   }
 
   @media (max-width: 600px) {

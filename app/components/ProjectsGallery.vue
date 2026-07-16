@@ -25,6 +25,43 @@
         <p class="projects-gallery__section-description">
           {{ group.description }}
         </p>
+
+        <div v-if="group.highlightTag" class="d-flex flex-wrap ga-2">
+          <v-chip color="primary" size="small" variant="tonal">
+            {{ group.highlightTag }}
+          </v-chip>
+        </div>
+
+        <p v-if="group.funding" class="projects-gallery__section-funding">
+          {{ group.funding }}
+        </p>
+
+        <!-- <div v-if="group.technologies?.length" class="d-flex flex-wrap ga-2">
+          <v-chip
+            v-for="technology in group.technologies"
+            :key="technology"
+            size="small"
+            variant="outlined"
+          >
+            {{ technology }}
+          </v-chip>
+        </div> -->
+
+        <div v-if="group.links?.length" class="d-flex flex-wrap ga-3">
+          <v-btn
+            v-for="link in group.links"
+            :key="link.label"
+            class="text-none"
+            color="primary"
+            :href="link.href"
+            prepend-icon="mdi-open-in-new"
+            rel="noopener noreferrer"
+            target="_blank"
+            variant="tonal"
+          >
+            {{ link.label }}
+          </v-btn>
+        </div>
       </div>
 
       <v-row>
@@ -81,6 +118,14 @@
   .projects-gallery__section-description {
     color: var(--portfolio-text-muted);
     line-height: 1.75;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .projects-gallery__section-funding {
+    color: var(--portfolio-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
     margin: 0;
     overflow-wrap: anywhere;
   }

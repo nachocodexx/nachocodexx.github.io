@@ -53,7 +53,7 @@ a {
   width: 100%;
   z-index: 1;
   padding-bottom: 72px;
-  padding-top: 96px;
+  padding-top: 0;
 }
 
 .page-shell {
@@ -240,9 +240,12 @@ a {
 }
 
 @media (max-width: 960px) {
-  .portfolio-shell,
   .page-shell {
     padding-top: 104px;
+  }
+
+  .portfolio-shell {
+    padding-top: 0;
   }
 
   .section-stack {
@@ -259,7 +262,7 @@ a {
 
   .portfolio-shell {
     padding-bottom: 48px;
-    padding-top: 64px;
+    padding-top: 48px;
   }
 
   .page-shell {
