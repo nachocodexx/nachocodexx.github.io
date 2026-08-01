@@ -15,9 +15,33 @@
 <template>
   <v-app-bar class="px-md-6" color="transparent" flat height="88">
     <div class="navigation-bar mx-auto d-flex align-center justify-space-between w-100">
-      <NuxtLink class="navigation-brand" to="/">
-        <span class="navigation-brand__full">Ignacio Castillo</span>
-        <span class="navigation-brand__compact">IC</span>
+      <NuxtLink
+        aria-label="Ignacio Castillo — Home"
+        class="navigation-brand"
+        to="/"
+      >
+        <span class="navigation-brand__logo">
+          <v-img
+            alt=""
+            class="navigation-brand__image navigation-brand__image--default"
+            contain
+            eager
+            height="48"
+            src="/logo_pb.png"
+            width="48"
+          />
+
+          <v-img
+            alt=""
+            aria-hidden="true"
+            class="navigation-brand__image navigation-brand__image--hover"
+            contain
+            eager
+            height="48"
+            src="/logo_pb-hover.png"
+            width="48"
+          />
+        </span>
       </NuxtLink>
 
       <div class="d-none d-md-flex align-center ga-3">
@@ -85,7 +109,7 @@
     <template #append>
       <div class="navigation-drawer__theme">
         <p class="navigation-drawer__eyebrow">Appearance</p>
-        <PortfolioThemePicker />
+        <PortfolioThemePicker compact />
       </div>
     </template>
   </v-navigation-drawer>
@@ -105,11 +129,45 @@
   }
 
   .navigation-brand {
+    align-items: center;
     color: var(--portfolio-text);
+    display: inline-flex;
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  .navigation-brand__logo {
+    display: block;
+    flex: 0 0 48px;
+    height: 48px;
+    position: relative;
+    width: 48px;
+  }
+
+  .navigation-brand__image {
+    inset: 0;
+    position: absolute;
+    transition: opacity 220ms ease;
+  }
+
+  .navigation-brand__image--default {
+    opacity: 1;
+  }
+
+  .navigation-brand__image--hover {
+    opacity: 0;
+  }
+
+  .navigation-brand:hover .navigation-brand__image--default,
+  .navigation-brand:focus-visible .navigation-brand__image--default {
+    opacity: 0;
+  }
+
+  .navigation-brand:hover .navigation-brand__image--hover,
+  .navigation-brand:focus-visible .navigation-brand__image--hover {
+    opacity: 1;
   }
 
   .navigation-brand__compact {
@@ -158,6 +216,12 @@
 
     .navigation-brand__compact {
       display: inline;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .navigation-brand__image {
+      transition: none;
     }
   }
 </style>

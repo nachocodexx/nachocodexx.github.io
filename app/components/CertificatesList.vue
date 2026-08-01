@@ -17,6 +17,26 @@
   function openCertificate (certificate: CertificateEntry) {
     activeCertificate.value = certificate
   }
+
+  function isExternalDocument (certificate: CertificateEntry) {
+    return /^https?:\/\//i.test(certificate.pdfUrl ?? '')
+  }
+
+  function downloadName (certificate: CertificateEntry) {
+    return certificate.pdfUrl && !isExternalDocument(certificate)
+      ? `${certificate.slug}.pdf`
+      : undefined
+  }
+
+  function documentInstructions (certificate: CertificateEntry) {
+    if (!certificate.pdfUrl) {
+      return 'This certificate’s PDF is not available yet.'
+    }
+
+    return isExternalDocument(certificate)
+      ? 'Open the certificate PDF from the external storage provider.'
+      : 'Open the certificate PDF in your browser or download it to your device.'
+  }
 </script>
 
 <template>
@@ -77,19 +97,31 @@
 
             <div class="certificates-carousel__actions">
               <span class="certificates-carousel__view-label">
-                View certificate
-                <v-icon icon="mdi-arrow-top-right" size="18" />
+                {{ certificate.pdfUrl ? 'View certificate' : 'Details only' }}
+                <v-icon :icon="certificate.pdfUrl ? 'mdi-arrow-top-right' : 'mdi-information-outline'" size="18" />
               </span>
 
               <v-btn
-                :aria-label="`Download ${certificate.title} PDF`"
+                v-if="certificate.pdfUrl"
+                :aria-label="`${isExternalDocument(certificate) ? 'Open' : 'Download'} ${certificate.title} PDF`"
                 class="text-none"
-                :download="`${certificate.slug}.pdf`"
+                :download="downloadName(certificate)"
                 :href="certificate.pdfUrl"
-                icon="mdi-download"
+                :icon="isExternalDocument(certificate) ? 'mdi-open-in-new' : 'mdi-download'"
+                :rel="isExternalDocument(certificate) ? 'noopener noreferrer' : undefined"
                 size="small"
+                :target="isExternalDocument(certificate) ? '_blank' : undefined"
                 variant="text"
                 @click.stop
+              />
+
+              <v-btn
+                v-else
+                :aria-label="`${certificate.title} PDF is not available`"
+                disabled
+                icon="mdi-file-alert-outline"
+                size="small"
+                variant="text"
               />
             </div>
           </v-card>
@@ -131,6 +163,7 @@
         <div class="certificates-carousel__dialog-content">
           <div v-if="!smAndDown" class="certificates-carousel__pdf-stage">
             <object
+              v-if="activeCertificate.pdfUrl"
               :aria-label="`${activeCertificate.title} PDF preview`"
               class="certificates-carousel__pdf"
               :data="activeCertificate.pdfUrl"
@@ -144,6 +177,7 @@
                   class="text-none"
                   color="primary"
                   :href="activeCertificate.pdfUrl"
+                  rel="noopener noreferrer"
                   target="_blank"
                   variant="tonal"
                 >
@@ -151,20 +185,30 @@
                 </v-btn>
               </div>
             </object>
+
+            <div v-else class="certificates-carousel__pdf-unavailable">
+              <v-icon icon="mdi-file-alert-outline" size="56" />
+              <p>This certificate’s PDF is not available yet.</p>
+            </div>
           </div>
 
           <div v-else class="certificates-carousel__mobile-pdf-actions">
-            <v-icon color="primary" icon="mdi-file-pdf-box" size="56" />
+            <v-icon
+              color="primary"
+              :icon="activeCertificate.pdfUrl ? 'mdi-file-pdf-box' : 'mdi-file-alert-outline'"
+              size="56"
+            />
 
-            <p>Open the certificate PDF in your browser or download it to your device.</p>
+            <p>{{ documentInstructions(activeCertificate) }}</p>
 
-            <div class="d-grid ga-3 w-100">
+            <div v-if="activeCertificate.pdfUrl" class="d-grid ga-3 w-100">
               <v-btn
                 block
                 class="text-none"
                 color="primary"
                 :href="activeCertificate.pdfUrl"
                 prepend-icon="mdi-open-in-new"
+                rel="noopener noreferrer"
                 target="_blank"
                 variant="tonal"
               >
@@ -172,9 +216,10 @@
               </v-btn>
 
               <v-btn
+                v-if="!isExternalDocument(activeCertificate)"
                 block
                 class="text-none"
-                :download="`${activeCertificate.slug}.pdf`"
+                :download="downloadName(activeCertificate)"
                 :href="activeCertificate.pdfUrl"
                 prepend-icon="mdi-download"
                 variant="outlined"
@@ -218,15 +263,29 @@
             </div>
 
             <v-btn
+              v-if="activeCertificate.pdfUrl"
               block
               class="text-none mt-auto"
               color="primary"
-              :download="`${activeCertificate.slug}.pdf`"
+              :download="downloadName(activeCertificate)"
               :href="activeCertificate.pdfUrl"
-              prepend-icon="mdi-download"
+              :prepend-icon="isExternalDocument(activeCertificate) ? 'mdi-open-in-new' : 'mdi-download'"
+              :rel="isExternalDocument(activeCertificate) ? 'noopener noreferrer' : undefined"
+              :target="isExternalDocument(activeCertificate) ? '_blank' : undefined"
               variant="tonal"
             >
-              Download PDF
+              {{ isExternalDocument(activeCertificate) ? 'Open certificate' : 'Download PDF' }}
+            </v-btn>
+
+            <v-btn
+              v-else
+              block
+              class="text-none mt-auto"
+              disabled
+              prepend-icon="mdi-file-alert-outline"
+              variant="tonal"
+            >
+              PDF unavailable
             </v-btn>
           </aside>
         </div>
@@ -393,6 +452,20 @@
     height: 100%;
     justify-items: center;
     text-align: center;
+  }
+
+  .certificates-carousel__pdf-unavailable {
+    align-content: center;
+    color: var(--portfolio-text-muted);
+    display: grid;
+    gap: 16px;
+    height: 100%;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .certificates-carousel__pdf-unavailable p {
+    margin: 0;
   }
 
   .certificates-carousel__mobile-pdf-actions {

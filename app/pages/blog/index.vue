@@ -1,8 +1,14 @@
 <script setup lang="ts">
   const { navigationItems } = usePortfolioData()
+  const postsStore = usePostsStore()
+  const {
+    hasMorePosts,
+    listError,
+    listLoading,
+    posts,
+  } = storeToRefs(postsStore)
 
-  // const { data: posts } = await useAsyncData('blog-index', () => queryCollection('blog').order('date', 'DESC').all())
-  const posts:any[] = []
+  onMounted(() => postsStore.fetchPosts())
 
   function formatDate (value: string) {
     return new Intl.DateTimeFormat('en', {
@@ -31,15 +37,41 @@
           title="Blog"
         >
           <div class="blog-index">
+            <v-alert
+              v-if="listError && posts.length === 0"
+              color="error"
+              icon="mdi-alert-circle-outline"
+              title="Posts are unavailable"
+              variant="tonal"
+            >
+              <p class="mb-4">{{ listError }}</p>
+
+              <v-btn class="text-none" size="small" variant="outlined" @click="postsStore.fetchPosts({ force: true })">
+                Try again
+              </v-btn>
+            </v-alert>
+
+            <div v-else-if="listLoading && posts.length === 0" class="py-12 text-center">
+              <v-progress-circular color="primary" indeterminate />
+              <p class="text-medium-emphasis mt-4 mb-0">Loading posts…</p>
+            </div>
+
+            <v-empty-state
+              v-else-if="posts.length === 0"
+              icon="mdi-post-outline"
+              text="Published articles will appear here."
+              title="No posts yet"
+            />
+
             <v-card
-              v-for="post in posts ?? []"
-              :key="post.path"
+              v-for="post in posts"
+              :key="post.id"
               class="glass-card pa-6"
               rounded="xl"
-              :to="post.path"
+              :to="`/blog/${post.slug}`"
             >
               <p class="blog-index__meta">
-                {{ formatDate(post.date) }}<span v-if="post.readingTime"> · {{ post.readingTime }}</span>
+                {{ formatDate(post.publishedAt ?? post.createdAt) }}
               </p>
 
               <h2 class="blog-index__title">
@@ -47,7 +79,7 @@
               </h2>
 
               <p class="blog-index__description">
-                {{ post.description }}
+                {{ post.subtitle }}
               </p>
 
               <div class="d-flex flex-wrap ga-2 mt-4">
@@ -61,6 +93,19 @@
                 </v-chip>
               </div>
             </v-card>
+
+            <div v-if="hasMorePosts" class="text-center pt-2">
+              <v-btn
+                class="text-none"
+                color="primary"
+                :loading="listLoading"
+                prepend-icon="mdi-chevron-down"
+                variant="outlined"
+                @click="postsStore.loadMorePosts()"
+              >
+                Load more
+              </v-btn>
+            </div>
           </div>
         </PortfolioSection>
       </div>

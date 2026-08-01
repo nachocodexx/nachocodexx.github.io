@@ -184,26 +184,38 @@
                 </p>
 
                 <div class="d-flex flex-wrap ga-4">
+                  <!-- <v-btn
+                    rounded="xl"
+                    size="large"
+                    color="success"
+                    to="/#projects"
+                    variant="outlined"
+                  >
+                      View projects
+                  </v-btn> -->
                   <v-btn
+                    :active = "false"
                     class="text-none"
-                    color="primary"
+                    color="secondary"
                     rounded="xl"
                     size="large"
                     to="/#projects"
+                    variant="flat"
                   >
                     View projects
                   </v-btn>
 
                   <v-btn
                     class="text-none"
+                    color="info" 
                     rounded="xl"
                     size="large"
-                    variant="tonal"
+                    variant="flat"
                     @click="openAssistant()"
                   >
                     <span class="d-inline-flex align-center ga-3">
                       <AssistantAvatar alt="AI assistant avatar" size="sm" />
-                      <span>Talk with AI assistant</span>
+                      <span class="text-white">Talk with AI assistant</span>
                     </span>
                   </v-btn>
 
@@ -244,7 +256,7 @@
                       Delivery
                     </p>
 
-                    <strong>Architecture, security, and product execution</strong>
+                    <strong>Architectural designs, Software, and Systems</strong>
                   </div>
                 </div>
               </v-card>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { nextTick, onBeforeUnmount, ref } from 'vue'
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
   interface ChatMessage {
     id: number
@@ -12,9 +12,21 @@
     action?: () => Promise<void>
   }
 
+  interface AssistantShortcut {
+    id: 'cv' | 'contact' | 'beer'
+    label: string
+    helper: string
+    icon: string
+    href: string
+    download?: string
+    external?: boolean
+  }
+
   const { closeAssistant, isOpen, toggleAssistant } = useAssistantWidget()
   const prompt = ref('')
   const isReplying = ref(false)
+  const isFinePointer = ref(false)
+  const shortcutsOpen = ref(false)
   const messagesRef = ref<HTMLElement | null>(null)
   const messages = ref<ChatMessage[]>([
     {
@@ -31,7 +43,106 @@
     'Where can I read the blog?',
   ]
 
+  const assistantShortcuts: AssistantShortcut[] = [
+    {
+      id: 'cv',
+      label: 'Download CV',
+      helper: 'Download Ignacio Castillo’s CV',
+      icon: 'mdi-file-download-outline',
+      href: '/ICB_CV.pdf',
+      download: 'Ignacio-Castillo-CV.pdf',
+    },
+    {
+      id: 'contact',
+      label: 'Contact',
+      helper: 'Go to the contact form',
+      icon: 'mdi-email-outline',
+      href: '/#contact',
+    },
+    {
+      id: 'beer',
+      label: 'Buy me a beer',
+      helper: 'Enjoyed a post? Buy me a beer.',
+      icon: 'mdi-beer-outline',
+      href: 'https://ko-fi.com/ignaciocastillo6x',
+      external: true,
+    },
+  ]
+
+  const fabLabel = computed(() => {
+    if (isOpen.value) {
+      return 'Close AI assistant'
+    }
+
+    if (shortcutsOpen.value) {
+      return 'Open AI assistant'
+    }
+
+    return isFinePointer.value ? 'Open AI assistant' : 'Show quick actions'
+  })
+
   let replyTimer: ReturnType<typeof setTimeout> | null = null
+  let pointerQuery: MediaQueryList | null = null
+
+  function closeShortcuts () {
+    shortcutsOpen.value = false
+  }
+
+  function openShortcuts () {
+    if (!isOpen.value) {
+      shortcutsOpen.value = true
+    }
+  }
+
+  function updatePointerMode () {
+    isFinePointer.value = pointerQuery?.matches ?? false
+
+    if (isFinePointer.value) {
+      closeShortcuts()
+    }
+  }
+
+  function handleFabFocus () {
+    if (isFinePointer.value) {
+      openShortcuts()
+    }
+  }
+
+  function handleFabPointerEnter () {
+    if (isFinePointer.value) {
+      openShortcuts()
+    }
+  }
+
+  function handleFabClick (event: MouseEvent) {
+    if (isOpen.value) {
+      closeShortcuts()
+      toggleAssistant()
+      return
+    }
+
+    const pointerType = 'pointerType' in event ? event.pointerType : ''
+    const usesTouchInteraction = pointerType === 'touch'
+      || pointerType === 'pen'
+      || (!pointerType && !isFinePointer.value)
+
+    if (usesTouchInteraction && !shortcutsOpen.value) {
+      shortcutsOpen.value = true
+      return
+    }
+
+    closeShortcuts()
+    toggleAssistant()
+  }
+
+  async function handleShortcutClick (shortcut: AssistantShortcut, event: MouseEvent) {
+    closeShortcuts()
+
+    if (shortcut.id === 'contact') {
+      event.preventDefault()
+      await scrollToSection('contact')
+    }
+  }
 
   async function scrollMessagesToEnd () {
     await nextTick()
@@ -140,10 +251,24 @@
     }
   }
 
+  watch(isOpen, (value) => {
+    if (value) {
+      closeShortcuts()
+    }
+  })
+
+  onMounted(() => {
+    pointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
+    updatePointerMode()
+    pointerQuery.addEventListener('change', updatePointerMode)
+  })
+
   onBeforeUnmount(() => {
     if (replyTimer) {
       window.clearTimeout(replyTimer)
     }
+
+    pointerQuery?.removeEventListener('change', updatePointerMode)
   })
 </script>
 
@@ -161,14 +286,14 @@
 
             <div>
               <p class="assistant-widget__eyebrow">
-                Local guide
+                Local guide 
               </p>
 
               <strong>AI assistant</strong>
             </div>
           </div>
 
-          <v-btn icon="mdi-close" variant="text" @click="closeAssistant()" />
+          <v-btn aria-label="Close AI assistant" icon="mdi-close" variant="text" @click="closeAssistant()" />
         </div>
 
         <div ref="messagesRef" class="assistant-widget__messages">
@@ -191,7 +316,7 @@
           <AssistantTypingIndicator v-if="isReplying" />
         </div>
 
-        <div class="d-flex flex-wrap ga-2 px-4 pb-3">
+        <div class="assistant-widget__prompts d-flex flex-wrap ga-2 px-4 pb-3">
           <v-chip
             v-for="item in quickPrompts"
             :key="item"
@@ -206,7 +331,7 @@
           </v-chip>
         </div>
 
-        <v-card-actions class="pa-4 pt-0">
+        <v-card-actions class="assistant-widget__actions pa-4 pt-0">
           <v-text-field
             v-model="prompt"
             class="assistant-widget__input"
@@ -223,18 +348,58 @@
       </v-card>
     </v-expand-transition>
 
-    <v-btn
-      class="assistant-widget__fab"
-      color="primary"
-      height="64"
-      min-width="64"
-      rounded="pill"
-      size="x-large"
-      width="64"
-      @click="toggleAssistant()"
-    >
-      <AssistantAvatar alt="Open AI assistant" size="lg " />
-    </v-btn>
+    <div class="assistant-widget__controls">
+      <v-speed-dial
+        v-model="shortcutsOpen"
+        :close-on-content-click="true"
+        content-class="assistant-widget__speed-dial-content"
+        location="top center"
+        :open-on-click="false"
+        :open-on-focus="false"
+        :open-on-hover="false"
+        transition="scale-transition"
+      >
+        <template #activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            :aria-label="fabLabel"
+            class="assistant-widget__fab"
+            color="primary"
+            height="64"
+            min-width="64"
+            rounded="pill"
+            size="x-large"
+            width="64"
+            @click="handleFabClick"
+            @focus="handleFabFocus"
+            @pointerenter="handleFabPointerEnter"
+          >
+            <AssistantAvatar :alt="fabLabel" size="lg" />
+          </v-btn>
+        </template>
+
+        <a
+          v-for="shortcut in assistantShortcuts"
+          :key="shortcut.id"
+          :aria-label="shortcut.helper"
+          class="assistant-widget__shortcut"
+          :download="shortcut.download"
+          :href="shortcut.href"
+          :rel="shortcut.external ? 'noopener noreferrer' : undefined"
+          :target="shortcut.external ? '_blank' : undefined"
+          :title="shortcut.helper"
+          @click="handleShortcutClick(shortcut, $event)"
+        >
+          <span class="assistant-widget__shortcut-label">
+            {{ shortcut.label }}
+          </span>
+
+          <span aria-hidden="true" class="assistant-widget__shortcut-icon">
+            <v-icon :icon="shortcut.icon" size="20" />
+          </span>
+        </a>
+      </v-speed-dial>
+    </div>
   </div>
 </template>
 
@@ -243,22 +408,33 @@
     bottom: 24px;
     position: fixed;
     right: 24px;
-    z-index: 30;
+    z-index: 9999;
   }
 
   .assistant-widget__panel {
     backdrop-filter: blur(16px);
     background: var(--portfolio-chat-panel);
     border: 1px solid var(--portfolio-border-strong);
+    display: flex;
+    flex-direction: column;
     margin-bottom: 16px;
-    width: min(380px, calc(100vw - 32px));
     max-height: 540px;
+    overflow: hidden;
+    width: min(380px, calc(100vw - 32px));
+
+  }
+
+  .assistant-widget__panel::before {
+    background: linear-gradient(180deg, var(--portfolio-accent-soft), transparent);
+    pointer-events: none;
   }
 
   .assistant-widget__header {
     align-items: center;
     border-bottom: 1px solid var(--portfolio-chat-divider);
+    /* background:red; */
     display: flex;
+    flex-shrink: 0;
     justify-content: space-between;
     padding: 20px 20px 12px;
   }
@@ -279,10 +455,17 @@
 
   .assistant-widget__messages {
     display: grid;
+    flex: 1 1 auto;
     gap: 12px;
     max-height: 320px;
+    min-height: 0;
     overflow-y: auto;
     padding: 16px 20px;
+  }
+
+  .assistant-widget__prompts,
+  .assistant-widget__actions {
+    flex-shrink: 0;
   }
 
   .assistant-widget__message {
@@ -317,9 +500,81 @@
     border-radius: 999px;
   }
 
+  .assistant-widget__controls {
+    margin-left: auto;
+    position: relative;
+    width: 64px;
+  }
+
   .assistant-widget__fab {
-    padding: 0;
     box-shadow: var(--portfolio-fab-shadow);
+    padding: 0;
+    position: relative;
+    transition:
+      filter 180ms ease,
+      transform 180ms ease;
+    z-index: 2;
+  }
+
+  .assistant-widget__fab:hover,
+  .assistant-widget__fab:focus-visible {
+    filter: brightness(1.08);
+    transform: translateY(-2px) scale(1.04);
+  }
+
+  .assistant-widget__shortcut {
+    align-items: center;
+    color: var(--portfolio-text);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    outline: none;
+    text-decoration: none;
+  }
+
+  .assistant-widget__shortcut-label {
+    backdrop-filter: blur(12px);
+    background: var(--portfolio-chat-panel);
+    border: 1px solid var(--portfolio-border-strong);
+    border-radius: 999px;
+    box-shadow: var(--portfolio-fab-shadow);
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 9px 12px;
+    transition:
+      border-color 160ms ease,
+      color 160ms ease,
+      filter 160ms ease;
+  }
+
+  .assistant-widget__shortcut-icon {
+    align-items: center;
+    background: rgb(var(--v-theme-primary));
+    border-radius: 50%;
+    box-shadow: var(--portfolio-fab-shadow);
+    color: rgb(var(--v-theme-on-primary));
+    display: inline-flex;
+    flex: 0 0 42px;
+    height: 42px;
+    justify-content: center;
+    transition:
+      filter 160ms ease,
+      transform 160ms ease;
+    width: 42px;
+  }
+
+  .assistant-widget__shortcut:hover .assistant-widget__shortcut-icon,
+  .assistant-widget__shortcut:focus-visible .assistant-widget__shortcut-icon {
+    filter: brightness(1.08);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  .assistant-widget__shortcut:hover .assistant-widget__shortcut-label,
+  .assistant-widget__shortcut:focus-visible .assistant-widget__shortcut-label {
+    border-color: var(--portfolio-accent);
+    color: var(--portfolio-accent);
+    filter: brightness(1.08);
   }
 
   @media (max-width: 600px) {
@@ -341,7 +596,6 @@
 
     .assistant-widget__messages {
       max-height: calc(100dvh - 330px);
-      min-height: 160px;
       padding: 14px 16px;
     }
 
@@ -350,14 +604,24 @@
       padding: 10px 12px;
     }
 
-    .assistant-widget__fab {
-      display: flex;
-      margin-left: auto;
-    }
-
     :deep(.v-card-actions) {
       align-items: stretch;
       padding: 12px !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .assistant-widget__fab,
+    .assistant-widget__shortcut-icon,
+    .assistant-widget__shortcut-label {
+      transition: none;
+    }
+
+    .assistant-widget__fab:hover,
+    .assistant-widget__fab:focus-visible,
+    .assistant-widget__shortcut:hover .assistant-widget__shortcut-icon,
+    .assistant-widget__shortcut:focus-visible .assistant-widget__shortcut-icon {
+      transform: none;
     }
   }
 </style>

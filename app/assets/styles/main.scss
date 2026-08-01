@@ -171,6 +171,7 @@ a {
       transparent 10px 18px
     ),
     linear-gradient(180deg, var(--portfolio-accent-soft), transparent);
+  // display: block;
   content: '';
   height: 12px;
   inset: 0 0 auto;
@@ -202,19 +203,46 @@ a {
   color: var(--portfolio-accent);
 }
 
-.content-prose code {
+.content-prose code:not(.math-inline, .math-display) {
   background: var(--portfolio-code-bg);
   border-radius: 8px;
   color: var(--portfolio-code-text);
   padding: 0.15rem 0.4rem;
 }
 
-.content-prose pre {
+.content-prose pre:not(:has(> code.math-display)) {
   background: var(--portfolio-pre-bg);
   border: 1px solid var(--portfolio-border);
   border-radius: 18px;
   overflow-x: auto;
   padding: 1rem;
+}
+
+.content-prose :is(.math-inline, .math-display) {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 0;
+}
+
+.content-prose pre:has(> code.math-display) {
+  background: transparent;
+  border: 0;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+}
+
+.content-prose .katex {
+  color: var(--portfolio-text);
+}
+
+.content-prose .katex-display {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35rem 0;
 }
 
 .content-prose blockquote {
@@ -237,6 +265,10 @@ a {
 
 .content-prose :is(a, code) {
   overflow-wrap: anywhere;
+}
+
+.content-prose :is(.math-inline, .math-display) {
+  overflow-wrap: normal;
 }
 
 @media (max-width: 960px) {

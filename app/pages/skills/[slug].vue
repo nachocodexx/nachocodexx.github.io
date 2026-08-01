@@ -27,11 +27,27 @@
   const relatedCertificates = computed(() => getEntriesForSkill(certificates, skill.value.slug))
   const relatedPapers = computed(() => getEntriesForSkill(papers, skill.value.slug))
   const relatedAssets = computed(() => getEntriesForSkill(skillAssets, skill.value.slug))
+  const postsStore = usePostsStore()
+  const relatedPosts = computed(() => (
+    skill.value ? postsStore.getPostsForSkill(skill.value.slug) : []
+  ))
+  let isMounted = false
 
-  const { data: relatedPosts } = await useAsyncData(`skill-posts-${skill.value.slug}`, async () => {
-    const posts = await queryCollection('blog').order('date', 'DESC').all()
+  function loadSkillPosts () {
+    if (skill.value) {
+      void postsStore.fetchPostsForSkill(skill.value.slug)
+    }
+  }
 
-    return posts.filter(post => post.skills.includes(skill.value!.slug))
+  watch(slug, () => {
+    if (isMounted) {
+      loadSkillPosts()
+    }
+  })
+
+  onMounted(() => {
+    isMounted = true
+    loadSkillPosts()
   })
 
   useSeoMeta({
@@ -47,9 +63,6 @@
     }).format(new Date(value))
   }
 
-  function getDoiUrl (doi: string) {
-    return `https://doi.org/${doi}`
-  }
 </script>
 
 <template>
@@ -98,7 +111,7 @@
               Blog posts
             </p>
 
-            <strong class="skill-portal__summary-value">{{ relatedPosts?.length ?? 0 }}</strong>
+            <strong class="skill-portal__summary-value">{{ relatedPosts.length }}</strong>
           </v-card>
 
           <v-card class="glass-card pa-5" rounded="xl">
@@ -154,16 +167,16 @@
               </p>
             </div>
 
-            <div v-if="relatedPosts?.length" class="skill-portal__card-grid">
+            <div v-if="relatedPosts.length > 0" class="skill-portal__card-grid">
               <v-card
                 v-for="post in relatedPosts"
-                :key="post.path"
+                :key="post.id"
                 class="glass-card pa-6"
                 rounded="xl"
-                :to="post.path"
+                :to="`/blog/${post.slug}`"
               >
                 <p class="skill-portal__card-meta">
-                  {{ formatDate(post.date) }}<span v-if="post.readingTime"> · {{ post.readingTime }}</span>
+                  {{ formatDate(post.publishedAt ?? post.createdAt) }}
                 </p>
 
                 <h3 class="skill-portal__card-title">
@@ -171,7 +184,7 @@
                 </h3>
 
                 <p class="skill-portal__card-copy">
-                  {{ post.description }}
+                  {{ post.subtitle }}
                 </p>
 
                 <div class="d-flex flex-wrap ga-2 mt-4">
@@ -259,42 +272,10 @@
               </p>
             </div>
 
-            <div v-if="relatedPapers.length > 0" class="skill-portal__card-grid">
-              <v-card
-                v-for="paper in relatedPapers"
-                :key="paper.title"
-                class="glass-card pa-6"
-                rounded="xl"
-              >
-                <p class="skill-portal__card-meta">
-                  {{ paper.venue }} · {{ paper.year }}
-                </p>
-
-                <h3 class="skill-portal__card-title">
-                  {{ paper.title }}
-                </h3>
-
-                <p class="skill-portal__card-copy">
-                  {{ paper.summary }}
-                </p>
-
-                <div class="mt-4 d-flex flex-wrap align-center ga-3">
-                  <v-chip class="text-none" color="primary" size="small" variant="tonal">
-                    DOI {{ paper.doi }}
-                  </v-chip>
-
-                  <a
-                    class="skill-portal__doi-link d-inline-flex align-center ga-2"
-                    :href="getDoiUrl(paper.doi)"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <span>Open DOI</span>
-                    <v-icon icon="mdi-open-in-new" size="18" />
-                  </a>
-                </div>
-              </v-card>
-            </div>
+            <ResearchPapersList
+              v-if="relatedPapers.length > 0"
+              :papers="relatedPapers"
+            />
 
             <p v-else class="skill-portal__empty-state">
               No related papers are listed for this skill yet.
@@ -467,11 +448,6 @@
     color: var(--portfolio-text-muted);
     line-height: 1.75;
     margin: 0;
-  }
-
-  .skill-portal__doi-link {
-    color: var(--portfolio-accent);
-    font-weight: 600;
   }
 
   .skill-portal__empty-state {

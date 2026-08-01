@@ -21,11 +21,15 @@
         v-bind="menuProps"
         class="portfolio-theme-picker__button text-none"
         :icon="compact ? 'mdi-palette-outline' : undefined"
-        prepend-icon="mdi-palette-outline"
         rounded="xl"
-        variant="outlined"
+        variant="text"
       >
-        <span v-if="!compact">{{ activeTheme.label }}</span>
+        <v-icon
+          icon="mdi-palette-outline"
+        />
+
+        <!-- prepend-icon="mdi-palette-outline" -->
+        <!-- <span v-if="!compact">{{ activeTheme.label }}</span> -->
       </v-btn>
     </template>
 

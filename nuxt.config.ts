@@ -12,9 +12,16 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
 
-  modules: ['@nuxt/fonts', 'vuetify-nuxt-module', '@nuxt/eslint', '@pinia/nuxt', '@nuxtjs/i18n'],
+  modules: ['@nuxt/fonts', 'vuetify-nuxt-module', '@nuxt/eslint', '@pinia/nuxt', '@nuxtjs/i18n', '@nuxtjs/mdc'],
 
-  css: ['@mdi/font/css/materialdesignicons.css', '@/assets/styles/main.scss'],
+  css: ['@mdi/font/css/materialdesignicons.css', 'katex/dist/katex.min.css', '@/assets/styles/main.scss'],
+
+  runtimeConfig: {
+    public: {
+      graphqlUrl: 'http://127.0.0.1:4000/graphql',
+      xoloUrl: 'https://xolo.mictlanx.com',
+    },
+  },
 
   app: {
     baseURL: '/',
@@ -44,7 +51,7 @@ export default defineNuxtConfig({
     preset: 'github-pages',
     prerender: {
       crawlLinks: true,
-      routes: ['/', ...SKILL_ROUTE_PATHS, ...PROJECT_ROUTE_PATHS],
+      routes: ['/', '/admin/login', '/admin/posts/new', ...SKILL_ROUTE_PATHS, ...PROJECT_ROUTE_PATHS],
     },
   },
 
@@ -85,16 +92,34 @@ export default defineNuxtConfig({
     vueI18n: './i18n.config.ts',
   },
 
-  content: {
-    experimental: {
-      sqliteConnector: 'native',
+  mdc: {
+    components: {
+      map: {
+        pre: 'MarkdownPre',
+        'special-text': 'SpecialText',
+      },
+      prose: true,
     },
-    build: {
-      markdown: {
-        highlight: {
-          theme: 'github-dark',
-          langs: ['ts', 'js', 'vue', 'shell', 'python', 'rust', 'scala', 'json', 'yaml'],
+    highlight: {
+      theme: 'github-dark',
+      langs: ['ts', 'js', 'vue', 'shell', 'python', 'rust', 'scala', 'json', 'yaml'],
+    },
+    rehypePlugins: {
+      'rehype-katex': {
+        options: {
+          output: 'htmlAndMathml',
+          strict: 'warn',
+          throwOnError: false,
         },
+        src: 'rehype-katex',
+      },
+    },
+    remarkPlugins: {
+      'remark-math': {
+        options: {
+          singleDollarTextMath: true,
+        },
+        src: 'remark-math',
       },
     },
   },

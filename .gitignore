@@ -6,3 +6,7 @@ node_modules/
 .ruler/
 AGENTS.md
 *.txt
+.env
+.env.*
+*.env.example
+

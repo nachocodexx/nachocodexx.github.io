@@ -1,9 +1,11 @@
 <script setup lang="ts">
   import type { PaperEntry } from '@/composables/usePortfolioData'
 
-  defineProps<{
+  const props = defineProps<{
     papers: PaperEntry[]
   }>()
+  const { smAndDown } = useDisplay()
+  const hasMultiplePapers = computed(() => props.papers.length > 1)
 
   function getDoiUrl (doi: string) {
     return `https://doi.org/${doi}`
@@ -11,66 +13,109 @@
 </script>
 
 <template>
-  <v-row>
-    <v-col
-      v-for="paper in papers"
-      :key="paper.title"
-      cols="12"
-      md="6"
-      xl="4"
+  <div class="research-papers-carousel">
+    <v-slide-group
+      aria-label="Research papers carousel"
+      center-active
+      class="research-papers-carousel__track"
+      :show-arrows="!smAndDown && hasMultiplePapers"
     >
-      <v-card class="glass-card h-100 d-flex flex-column pa-6" rounded="xl">
-        <p class="research-papers__meta">
-          {{ paper.venue }} · {{ paper.year }}
-        </p>
-
-        <h3 class="research-papers__title">
-          {{ paper.title }}
-        </h3>
-
-        <p class="research-papers__summary">
-          {{ paper.summary }}
-        </p>
-
-        <p class="research-papers__authors">
-          {{ paper.authors }}
-        </p>
-
-        <div class="mt-auto pt-4 d-flex flex-wrap align-center ga-3">
-          <v-chip
-            class="research-papers__doi text-none"
-            color="primary"
-            size="small"
-            variant="tonal"
-          >
-            DOI {{ paper.doi }}
-          </v-chip>
-
-          <a
-            class="research-papers__link d-inline-flex align-center ga-2"
+      <v-slide-group-item
+        v-for="paper in papers"
+        :key="paper.title"
+      >
+        <article class="research-papers-carousel__item">
+          <v-card
+            :aria-label="`Open ${paper.title} on DOI.org in a new tab`"
+            class="research-papers__card glass-card h-100 d-flex flex-column pa-6"
             :href="getDoiUrl(paper.doi)"
             rel="noopener noreferrer"
+            rounded="xl"
             target="_blank"
           >
-            <span>Open DOI</span>
-            <v-icon icon="mdi-open-in-new" size="18" />
-          </a>
-        </div>
-      </v-card>
-    </v-col>
-  </v-row>
+            <p class="research-papers__meta">
+              {{ paper.venue }} · {{ paper.year }}
+            </p>
+
+            <h3 class="research-papers__title">
+              {{ paper.title }}
+            </h3>
+
+            <p class="research-papers__summary">
+              {{ paper.summary }}
+            </p>
+
+            <p class="research-papers__authors">
+              {{ paper.authors }}
+            </p>
+
+            <div class="mt-auto pt-4 d-flex flex-wrap align-center ga-3">
+              <v-chip
+                class="research-papers__doi text-none"
+                color="primary"
+                size="small"
+                variant="tonal"
+              >
+                DOI {{ paper.doi }}
+              </v-chip>
+
+              <span
+                class="research-papers__link d-inline-flex align-center ga-2"
+              >
+                <span>Open DOI</span>
+                <v-icon icon="mdi-open-in-new" size="18" />
+              </span>
+            </div>
+          </v-card>
+        </article>
+      </v-slide-group-item>
+    </v-slide-group>
+
+    <p v-if="hasMultiplePapers" class="research-papers-carousel__hint">
+      Scroll or use the arrows to explore {{ papers.length }} research papers.
+    </p>
+  </div>
 </template>
 
 <style scoped>
-  :deep(.v-row),
-  :deep(.v-col),
-  :deep(.v-card) {
+  .research-papers-carousel {
+    display: grid;
+    gap: 12px;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .research-papers-carousel__track {
+    margin-inline: -16px;
     max-width: 100%;
     min-width: 0;
   }
 
-  :deep(.v-row) {
-    width: 100%;
+  .research-papers-carousel__track :deep(.v-slide-group__content) {
+    align-items: stretch;
+  }
+
+  .research-papers-carousel__item {
+    height: 100%;
+    padding: 8px;
+    width: min(88vw, 460px);
+  }
+
+  .research-papers__card {
+    cursor: pointer;
+    min-width: 0;
+    transition:
+      border-color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .research-papers__card:focus-visible,
+  .research-papers__card:hover {
+    border-color: color-mix(in srgb, var(--portfolio-accent) 54%, var(--portfolio-border));
+    outline: none;
+    transform: translateY(-3px);
   }
 
   .research-papers__meta {
@@ -109,12 +154,36 @@
   .research-papers__doi {
     height: auto;
     max-width: 100%;
-    white-space: normal;
     overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .research-papers-carousel__hint {
+    color: var(--portfolio-text-muted);
+    font-size: 0.85rem;
+    margin: 0;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  @media (min-width: 700px) {
+    .research-papers-carousel__item {
+      width: 420px;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .research-papers-carousel__item {
+      width: 450px;
+    }
   }
 
   @media (max-width: 600px) {
-    :deep(.v-card) {
+    .research-papers-carousel__track {
+      margin-inline: -8px;
+    }
+
+    .research-papers__card {
       padding: 20px !important;
     }
 

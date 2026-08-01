@@ -1,15 +1,8 @@
 <script setup lang="ts">
-  export interface BlogPreviewItem {
-    path: string
-    title: string
-    description: string
-    date: string
-    readingTime?: string
-    tags: string[]
-  }
+  import type { PostSummary } from '@/graphql/posts'
 
   defineProps<{
-    posts: BlogPreviewItem[]
+    posts: PostSummary[]
   }>()
 
   function formatDate (value: string) {
@@ -26,13 +19,13 @@
     <v-row>
       <v-col
         v-for="post in posts"
-        :key="post.path"
+        :key="post.id"
         cols="12"
         md="4"
       >
-        <v-card class="glass-card h-100 pa-6" rounded="xl" :to="post.path">
+        <v-card class="glass-card h-100 pa-6" rounded="xl" :to="`/blog/${post.slug}`">
           <p class="blog-preview__meta">
-            {{ formatDate(post.date) }}<span v-if="post.readingTime"> · {{ post.readingTime }}</span>
+            {{ formatDate(post.publishedAt ?? post.createdAt) }}
           </p>
 
           <h3 class="blog-preview__title">
@@ -40,7 +33,7 @@
           </h3>
 
           <p class="blog-preview__summary">
-            {{ post.description }}
+            {{ post.subtitle }}
           </p>
 
           <div class="d-flex flex-wrap ga-2 mt-4">

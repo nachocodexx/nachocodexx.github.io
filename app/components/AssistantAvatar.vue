@@ -16,8 +16,8 @@
 
   const config = useRuntimeConfig()
   const baseURL = computed(() => config.app.baseURL || '/')
-  const normalSrc = computed(() => `${baseURL.value}ia.png`)
-  const blinkSrc = computed(() => `${baseURL.value}ia_2.png`)
+  const normalSrc = computed(() => `${baseURL.value}mictli_fb_default.png`)
+  const blinkSrc = computed(() => `${baseURL.value}mictli_fb_blink.png`)
   const currentSrc = computed(() => sharedBlinkState.value ? blinkSrc.value : normalSrc.value)
 
   function scheduleBlink () {

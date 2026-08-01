@@ -26,6 +26,11 @@ export const PORTFOLIO_SKILL_SLUGS = [
   'project-management',
   'electronics',
   'kurrentdb',
+  'angular',
+  'react',
+  'communication',
+  'infrastructure',
+  'containerization',
 ] as const
 
 export type SkillSlug = typeof PORTFOLIO_SKILL_SLUGS[number]
@@ -85,7 +90,7 @@ export interface CertificateEntry {
   category: string
   tags: string[]
   skills: SkillSlug[]
-  pdfUrl: string
+  pdfUrl?: string
 }
 
 export interface PaperEntry {
@@ -125,8 +130,43 @@ export interface NavigationItem {
   to: string
 }
 
+export type ExperienceThesis =
+  | {
+    status: 'available'
+    downloadName: string
+    url: string
+  }
+  | {
+    status: 'in-progress'
+  }
+
+export interface ExperienceEntry {
+  id: string
+  kind: 'education' | 'work'
+  period: string
+  professionalLicense?: {
+    downloadName: string
+    url: string
+  }
+  projectSlugs: string[]
+  relatedPaperDois?: string[]
+  role: string
+  organization: string
+  summary: string
+  thesis?: ExperienceThesis
+}
+
+const PHD_PAPER_DOIS = [
+  '10.1109/TCC.2026.3693716',
+  '10.1038/s41598-025-32196-3',
+  '10.1109/TSC.2024.3168616',
+  '10.1145/3757347.3759148',
+  '10.1007/978-3-031-90203-1_16',
+]
+
 export const NAVIGATION_ITEMS: NavigationItem[] = [
   { label: 'About', to: '/#about' },
+  { label: 'Experience', to: '/#experience' },
   { label: 'Skills', to: '/#skills' },
   { label: 'Projects', to: '/#projects' },
   { label: 'Certificates', to: '/#certificates' },
@@ -135,62 +175,340 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   { label: 'Contact', to: '/#contact' },
 ]
 
+export const EXPERIENCE: ExperienceEntry[] = [
+  {
+    id: 'computer-systems-engineering',
+    kind: 'education',
+    period: '2015–2019',
+    professionalLicense: {
+      downloadName: '12019146.pdf',
+      url: '/12019146.pdf',
+    },
+    projectSlugs: [],
+    role: 'Computer Systems Engineering',
+    organization: 'Tec Valles',
+    summary: 'Engineering degree in computer systems.',
+  },
+  {
+    id: 'oneclick-software-developer',
+    kind: 'work',
+    period: '2017–2019',
+    projectSlugs: [],
+    role: 'Software Developer',
+    organization: 'OneClick',
+    summary: 'Backend development and production deployments on AWS.',
+  },
+  {
+    id: 'independent-freelancer',
+    kind: 'work',
+    period: '2019–2020',
+    projectSlugs: [],
+    role: 'Freelancer',
+    organization: 'Independent',
+    summary: 'Scala backends, cloud administration, and production delivery.',
+  },
+  {
+    id: 'masters-engineering-computational-technologies',
+    kind: 'education',
+    period: '2020–2022',
+    professionalLicense: {
+      downloadName: '13843522-C1.pdf',
+      url: '/13843522-C1.pdf',
+    },
+    projectSlugs: [],
+    role: 'Master’s in Engineering and Computational Technologies',
+    organization: 'CINVESTAV',
+    summary: 'Graduate study in engineering and computational technologies.',
+    thesis: {
+      status: 'available',
+      downloadName: 'master_thesis.pdf',
+      url: '/master_thesis.pdf',
+    },
+  },
+  {
+    id: 'pronaces-software-developer',
+    kind: 'work',
+    period: '2021–2022',
+    projectSlugs: [],
+    role: 'Software Developer',
+    organization: 'FORDECYT–PRONACES–CONACYT',
+    summary: 'Distributed systems for a national health data platform.',
+  },
+  {
+    id: 'prep-it-audit-technician',
+    kind: 'work',
+    period: 'Feb–Jun 2022',
+    projectSlugs: [],
+    role: 'IT Audit Technician',
+    organization: 'PREP · Electoral Institute of Tamaulipas',
+    summary: 'Audited the operation layer of the PREP 2022 system.',
+  },
+  {
+    id: 'phd-start',
+    kind: 'education',
+    period: '2023',
+    projectSlugs: ['mictlanx-router'],
+    relatedPaperDois: [...PHD_PAPER_DOIS],
+    role: 'Started Ph.D. in Engineering and Computational Technologies',
+    organization: 'CINVESTAV',
+    summary: 'Began doctoral research in engineering and computational technologies.',
+    thesis: {
+      status: 'in-progress',
+    },
+  },
+  {
+    id: 'sivei-distributed-load-testing-engineer',
+    kind: 'work',
+    period: 'Jan–Jun 2024',
+    projectSlugs: [],
+    role: 'Distributed Load Testing Engineer',
+    organization: 'SIVEI',
+    summary: 'Load and stress testing with Python and Selenium automation.',
+  },
+  {
+    id: 'madtec-software-architect-in-chief',
+    kind: 'work',
+    period: '2025–2027',
+    projectSlugs: ['jub-api', 'jub-client', 'jub-web'],
+    role: 'Software Architect in Chief',
+    organization: 'MADTEC',
+    summary: 'Unificación de servicios de ciencia de datos para la construcción de un concentrador, distribuidor y buscador nacional de datos e información estratégica.',
+  },
+  {
+    id: 'phd-expected-completion',
+    kind: 'education',
+    period: 'Jan - 2027',
+    projectSlugs: ['mictlanx-router'],
+    relatedPaperDois: [...PHD_PAPER_DOIS],
+    role: 'Expected Ph.D. completion',
+    organization: 'CINVESTAV',
+    summary: 'Expected completion of the Ph.D. in Engineering and Computational Technologies.',
+    thesis: {
+      status: 'in-progress',
+    },
+  },
+]
+
 export const SKILL_CATEGORIES: SkillCategory[] = [
   {
     title: 'Core skills',
     description: 'The broad engineering areas that shape architecture decisions, system behavior, and long-term maintainability.',
     items: [
-      { slug: 'distributed-systems', icon: 'mdi-graph-outline', name: 'Distributed Systems', level: 95, note: 'Designing resilient services, coordination flows, and runtime trade-offs.' },
-      { slug: 'software-architecture', icon: 'mdi-sitemap-outline', name: 'Software Architecture', level: 94, note: 'Structuring platforms for clarity, evolution, and operational reliability.' },
-      { slug: 'algorithms', icon: 'mdi-function-variant', name: 'Algorithms', level: 88, note: 'Using efficient problem-solving patterns for systems and data-intensive work.' },
-      { slug: 'data-structures', icon: 'mdi-database-outline', name: 'Data Structures', level: 89, note: 'Choosing practical structures that support performance and correctness.' },
-      { slug: 'networking', icon: 'mdi-lan-connect', name: 'Networking', level: 84, note: 'Understanding service communication, latency behavior, and infrastructure boundaries.' },
-      { slug: 'programming', icon: 'mdi-code-braces', name: 'Programming', level: 93, note: 'Turning ideas into maintainable implementations across research and product contexts.' },
-      { slug: 'ui-design', icon: 'mdi-palette-outline', name: 'UI Design', level: 78, note: 'Shaping clear interfaces with attention to usability and visual restraint.' },
+      { 
+        slug: 'programming',
+        icon: 'mdi-code-braces',
+        name: 'Programming',
+        level: 95,
+        note: 'I have extensive experience in programming, with a strong focus on writing clean, efficient, and maintainable code across multiple languages and paradigms.'
+      },
+      { 
+        slug: 'distributed-systems',
+        icon: 'mdi-graph-outline',
+        name: 'Distributed Systems',
+        level: 95,
+        note: 'Designing and implementing distributed systems is my specialty, with a focus on scalability, fault tolerance, and performance optimization.'
+      },
+      { 
+        slug: 'infrastructure', 
+        icon: 'mdi-server-network-outline', 
+        name: 'Infrastructure', 
+        level: 95, 
+        note: 'I have some experience in infrastructure, including deployment, server configurations, and basic security practices.' 
+      },
+      { 
+        slug: 'software-architecture',
+        icon: 'mdi-sitemap-outline',
+        name: 'Software Architecture',
+        level: 90,
+        note: 'My hobby is designing software architectures that are simple, scalable, and maintainable, with a focus on modularity and separation of concerns.'
+      },
+      { 
+        slug: 'containerization', 
+        icon: 'mdi-docker', 
+        name: 'Containerization', 
+        level: 90, 
+        note: 'I have studied and implemented various containerization technologies to optimize deployment and management of applications.' 
+      },
+      {
+        slug: 'communication',
+        icon:'mdi-account-group-outline',
+        name:'Communication', level: 90,
+        note:'Clear and effective communication of technical ideas and project status.'
+      },
+      { 
+        slug: 'algorithms', 
+        icon: 'mdi-function-variant', 
+        name: 'Algorithms & Data Structures', 
+        level: 80, 
+        note: 'I have created and studied algorithms for a variety of problems, with a focus on efficiency and space complexity.' 
+      },
+      { 
+        slug: 'networking', 
+        icon: 'mdi-lan-connect', 
+        name: 'Networking', 
+        level: 70, 
+        note: 'I have some experience in networking, including understanding protocols, network topologies, and basic network security principles.' 
+      },
+      // { slug: 'ui-design', icon: 'mdi-palette-outline', name: 'UI Design', level: 78, note: 'Shaping clear interfaces with attention to usability and visual restraint.' },
     ],
   },
   {
     title: 'Programming Languages',
     description: 'Primary languages used across systems engineering, backend development, data work, and interactive products.',
     items: [
-      { slug: 'python', icon: 'mdi-language-python', name: 'Python', level: 94, note: 'Backend services, automation, data processing, and research-oriented tooling.' },
-      { slug: 'typescript', icon: 'mdi-language-typescript', name: 'TypeScript', level: 92, note: 'Typed front-end and full-stack work with maintainable component and API design.' },
-      { slug: 'javascript', icon: 'mdi-language-javascript', name: 'JavaScript', level: 90, note: 'Practical browser and platform work with a strong understanding of the ecosystem.' },
-      { slug: 'rust', icon: 'mdi-cog-outline', name: 'Rust', level: 86, note: 'Systems-focused development with reliability and performance in mind.' },
-      { slug: 'scala', icon: 'mdi-lambda', name: 'Scala', level: 84, note: 'Functional and distributed programming for more demanding platform scenarios.' },
-      { slug: 'r', icon: 'mdi-chart-bell-curve-cumulative', name: 'R', level: 74, note: 'Statistical analysis and data exploration for academic and applied research.' },
+      { 
+        slug: 'python',
+        icon: 'mdi-language-python',
+        name: 'Python', level: 95,
+        note: 'I have used Python extensively for backend development, data analysis, and scripting, with a focus on writing clean and efficient code.' 
+      },
+      { 
+        slug: 'rust',
+        icon: 'mdi-cog-outline',
+        name: 'Rust', level: 90, 
+        note: 'I have experience in Rust for systems programming, with a focus on memory safety, concurrency, and performance optimization.' 
+      },
+      { 
+        slug: 'typescript',
+        icon: 'mdi-language-typescript',
+        name: 'TypeScript',
+        level: 90,
+        note: 'Typed front-end and full-stack work with maintainable component and API design.' 
+      },
+      { 
+        slug: 'javascript',
+        icon: 'mdi-language-javascript',
+        name: 'JavaScript',
+        level: 90,
+        note: 'Building backend in Node.js and front-end applications during the early stages of my career.' 
+      },
+      { slug: 'scala',
+        icon: 'mdi-lambda',
+        name: 'Scala',
+        level: 85,
+        note: 'Functional and distributed programming for more demanding platform scenarios.' 
+      },
+      { 
+        slug: 'r', 
+        icon: 'mdi-chart-bell-curve-cumulative',
+        name: 'R', 
+        level: 70, 
+        note: 'Statistical analysis and data exploration for academic and applied research.' 
+      },
     ],
   },
   {
     title: 'Frameworks',
     description: 'Delivery-focused tools for building interfaces, APIs, and desktop experiences.',
     items: [
-      { slug: 'vue', icon: 'mdi-vuejs', name: 'Vue', level: 92, note: 'Component-driven UI development with a focus on smooth, readable experiences.' },
-      { slug: 'fastapi', icon: 'mdi-api', name: 'FastAPI', level: 87, note: 'Structured API development with strong typing and production-friendly ergonomics.' },
-      { slug: 'tauri', icon: 'mdi-application-brackets-outline', name: 'Tauri', level: 79, note: 'Lightweight desktop application delivery with web technologies and native integration.' },
+      { 
+        slug: 'vue', 
+        icon: 'mdi-vuejs', 
+        name: 'Vue', 
+        level: 90, 
+        note: 'My favorite front-end framework for building interactive web applications with a focus on simplicity and performance.' 
+      },
+      { 
+        slug: 'fastapi', 
+        icon: 'mdi-api', 
+        name: 'FastAPI', 
+        level: 90, 
+        note: 'Structured API development with strong typing and production-friendly ergonomics.' 
+      },
+      { 
+        slug: 'tauri', 
+        icon: 'mdi-application-brackets-outline', 
+        name: 'Tauri', 
+        level: 70, 
+        note: 'Lightweight desktop application delivery with web technologies and native integration.' 
+      },
+      { 
+        slug: 'angular', 
+        icon: 'mdi-angular', 
+        name: 'Angular', 
+        level: 60, 
+        note: 'I have used for small projects in the past, but I am more comfortable with other frameworks.' },
+      { 
+        slug: 'react', 
+        icon: 'mdi-react', 
+        name: 'React', 
+        level: 40, 
+        note: 'It was my first choice for building user interfaces, but I have since moved on to other frameworks.' },
     ],
   },
   {
     title: 'Databases',
     description: 'Storage and platform technologies used to support production systems, observability, and data-heavy services.',
     items: [
-      { slug: 'sql', icon: 'mdi-database-search-outline', name: 'SQL', level: 91, note: 'Data modeling, querying, and performance-aware relational access patterns.' },
-      { slug: 'postgresql', icon: 'mdi-elephant', name: 'PostgreSQL', level: 89, note: 'Transactional workloads, schema design, and dependable data services.' },
-      { slug: 'mongodb', icon: 'mdi-leaf', name: 'MongoDB', level: 81, note: 'Document-oriented storage when flexibility and fast iteration are priorities.' },
-      { slug: 'redis', icon: 'mdi-lightning-bolt-outline', name: 'Redis', level: 82, note: 'Caching, ephemeral state, and low-latency coordination patterns.' },
-      {slug:'kurrentdb', icon:'mdi-database-clock-outline', name:'KurrentDB', level: 70, note:'It is an event-driven, time-series database designed for high-throughput data ingestion and real-time analytics.'},
+      // { slug: 'sql', icon: 'mdi-database-search-outline', name: 'SQL', level: 91, note: 'Data modeling, querying, and performance-aware relational access patterns.' },
+      { 
+        slug: 'mongodb', 
+        icon: 'mdi-leaf', 
+        name: 'MongoDB', 
+        level: 90, 
+        note: 'I have used MongoDB for the 85% of my projects, with a focus on schema design, indexing, and performance optimization.' 
+      },
+      { 
+        slug: 'redis', 
+        icon: 'mdi-lightning-bolt-outline', 
+        name: 'Redis', 
+        level: 90, 
+        note: 'My favorite option for caching, pub/sub, and ephemeral data storage in high-performance applications.' 
+      },
+      { 
+        slug: 'postgresql', 
+        icon: 'mdi-elephant', 
+        name: 'PostgreSQL', 
+        level: 80, 
+        note: 'My best option for relational data storage, with a focus on advanced features like JSONB, indexing, and performance tuning.' 
+      },
+      {
+        slug:'kurrentdb',
+        icon:'mdi-database-clock-outline',
+        name:'KurrentDB',
+        level: 70,
+        note:'The new toy in my datbase arsenal, a time-series database for high-frequency data and event streams.'
+      },
     ],
   },
   {
     title: 'Engineering practices',
     description: 'Security, source control, operating systems, and delivery practices used to support dependable engineering work.',
     items: [
-      { slug: 'cybersecurity', icon: 'mdi-shield-lock-outline', name: 'Cybersecurity', level: 86, note: 'Assessing risk, protecting systems, and responding to security events.' },
-      { slug: 'git', icon: 'mdi-source-branch', name: 'Git', level: 92, note: 'Version control and collaborative development workflows across complex codebases.' },
-      { slug: 'linux', icon: 'mdi-linux', name: 'Linux', level: 88, note: 'Command-line tooling, system administration, and secure development environments.' },
-      // { slug: 'agile', icon: 'mdi-sync', name: 'Agile', level: 82, note: 'Iterative planning and delivery practices for collaborative product development.' },
-      { slug: 'project-management', icon: 'mdi-clipboard-check-outline', name: 'Project Management', level: 80, note: 'Organizing scope, delivery, and team coordination around clear outcomes.' },
-      {slug:'electronics', icon:'mdi-chip', name:'Electronics', level: 50, note:'Microcontrollers, embedded systems, and circuit design.' },
+      { 
+        slug: 'git',
+        icon: 'mdi-source-branch', 
+        name: 'Git', 
+        level: 90, 
+        note: 'Version control and collaborative development workflows across complex codebases.' 
+      },
+      { 
+        slug: 'linux',
+        icon: 'mdi-linux',
+        name: 'Linux', 
+        level: 85, 
+        note: 'Command-line tooling, system administration, and secure development environments.' 
+      },
+      {
+        slug: 'project-management', 
+        icon: 'mdi-clipboard-check-outline', 
+        name: 'Project Management', 
+        level: 85, 
+        note: 'Organizing scope, delivery, and team coordination around clear outcomes.' 
+      },
+      { 
+        slug: 'cybersecurity',
+        icon: 'mdi-shield-lock-outline', 
+        name: 'Cybersecurity', 
+        level: 80, 
+        note: "I'm a passionate advocate for security best practices, including secure coding, threat modeling, and risk assessment." 
+      },
+      {
+        slug:'electronics', 
+        icon:'mdi-chip', 
+        name:'Electronics', 
+        level: 50, 
+        note:"I'm still in the early stages of learning about electronics and embedded systems." },
 
     ],
   },
@@ -546,7 +864,7 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         {
           slug: 'mictlanx-router',
           title: 'MictlanX router',
-          type: 'Distributed system component and load balancer',
+          type: 'Distributed data routing',
           technologies: ['Python', 'Poetry', 'Docker'],
           description: 'A central load balancing component of the MictlanX prototype storage system, developed as part of a PhD thesis titled "Reactive elastic replication strategy for ephemeral computing". Its primary role is to distribute and balance data loads across a set of Virtual Storage Systems (VSS). It handles file allocations alongside the system client and processes availability policies to update replication strategies across active peers.',
           developmentYear: '2024',
@@ -567,8 +885,8 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         },
         {
           slug: 'mictlanx-sync',
-          title: 'MictlanX sync',
-          type: 'Data synchronization tool and desktop utility',
+          title: 'MictlanX Sync',
+          type: 'Data synchronization tool',
           technologies: ['Python', 'Nuitka', 'Docker', 'YAML'],
           description: 'A file synchronization utility designed to keep data consistent across different locations or systems using designated storage areas called buckets. The tool connects with the MictlanX storage system routers and integrates with the Xolo API for identity and user management. It processes data using configurable chunk sizes, timeouts, and idle thresholds. To streamline distribution for Windows environments, the application is compiled into a standalone executable using Nuitka.',
           developmentYear: '2024',
@@ -611,8 +929,8 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         },
         {
           slug: 'mictlanx-rm-storage-peer-manager',
-          title: 'MictlanX RM (Storage Peer Manager)',
-          type: 'Cluster control plane and state orchestration service',
+          title: 'MictlanX RM',
+          type: 'Cluster control plane for replicas',
           technologies: ['Python', 'ZeroMQ', 'Docker', 'Poetry', 'TinyDB'],
           description: 'The control plane component for the MictlanX storage system that maintains cluster state. It handles the discovery and healing of storage peers, tracks distribution placement maps for objects, records operational metrics for balancing, and coordinates active, passive, or hybrid replication strategies. Running alongside the MictlanX router to form a Virtual Storage Space (VSS), the service utilizes ZeroMQ for its control plane transport layer and incorporates an orchestration backend named Summoner to manage elastic peer allocations inside containerized environments.',
           developmentYear: '2025 to 2026',
@@ -663,7 +981,7 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         {
           slug: 'axo-ui',
           title: 'Axo UI',
-          type: 'User interface and frontend application',
+          type: 'User interface',
           technologies: ['Vue', 'Vuetify', 'Vite', 'Pinia', 'Node.js'],
           description: 'A graphical interface designed to interact with the Axo backend execution engine. It provides an environment for users to create, manage, and monitor active objects. The application uses Vite for project bundling, Pinia with a persisted state plugin for state management, and a standardized set of Vuetify components for forms and asset navigation.',
           developmentYear: '2024 to 2025',
@@ -685,7 +1003,7 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         {
           slug: 'axo-endpoint',
           title: 'Axo endpoint',
-          type: 'Distributed system component and execution runtime',
+          type: 'Distributed execution runtime',
           technologies: ['Python', 'Docker'],
           description: 'A dedicated runtime component of the Axo platform responsible for enabling the execution of active objects. It operates as a distributed execution node or endpoint that receives, manages, and executes remote method invocations dispatched by the core framework, separating the processing layer from the underlying client application.',
           developmentYear: '2024',
@@ -736,7 +1054,7 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         {
           slug: 'optikit',
           title: 'OptiKit',
-          type: 'Algorithmic toolkit and research framework',
+          type: 'Algorithmic toolkit',
           technologies: ['Python'],
           description: 'A modular and extensible toolkit designed for experimenting with and applying graph search and metaheuristic algorithms. It includes support for combinatorial, continuous, and multi-objective computational problems, making it suitable for research, prototyping, and educational tasks. The framework includes classical graph implementations like Dijkstra and Bellman-Ford, local search metaheuristics like Simulated Annealing and Tabu Search, nature-inspired methods like the Bees Algorithm, and evolutionary algorithms like NSGA-II. It was developed by students under academic guidance to leverage the ecosystem resources.',
           developmentYear: '2024 to 2025',
@@ -754,7 +1072,7 @@ export const PROJECT_GROUPS: ProjectGroup[] = [
         {
           slug: 'axo-classification-algorithms',
           title: 'Axo classification algorithms',
-          type: 'Machine learning toolkit integration',
+          type: 'Machine learning toolkit',
           technologies: ['Python', 'Poetry', 'pytest'],
           description: 'A collection of classification algorithms implemented with a unified structure and integrated directly with the Axo framework to leverage its execution capabilities. The codebase standardizes training, prediction, metrics, and visualization across multiple models, including decision trees, linear regression, logistic regression, naive Bayes, perceptron systems, and support vector machines. The architecture enforces consistent method signatures, utilizes strict type hinting, and includes an automated testing suite with code coverage analysis tools. It was developed by students under academic guidance.',
           developmentYear: '2024 to 2025',
@@ -816,7 +1134,7 @@ export const PROJECTS: ProjectEntry[] = PROJECT_GROUPS.flatMap(group => group.pr
 export const CERTIFICATES: CertificateEntry[] = [
   {
     slug: 'google-cybersecurity-professional-certificate',
-    title: 'Google cybersecurity professional certificate',
+    title: 'Google Cybersecurity Professional Certificate',
     issuer: 'Google',
     issued: 'August 2024',
     credentialId: 'ACKX48P3NP0W',
@@ -826,19 +1144,19 @@ export const CERTIFICATES: CertificateEntry[] = [
     pdfUrl: '/certificates/google-cybersecurity-professional-certificate.pdf',
   },
   {
-    slug: 'cybersecurity-fundamentals',
-    title: 'Cybersecurity fundamentals',
+    slug: 'foundations-of-cybersecurity',
+    title: 'Foundations of Cybersecurity',
     issuer: 'Google',
     issued: 'June 2024',
     credentialId: 'AK2Z3JPPN7F2',
     category: 'Cybersecurity professional programs',
     tags: ['Cybersecurity', 'Network security'],
     skills: ['cybersecurity', 'networking'],
-    pdfUrl: '/certificates/cybersecurity-fundamentals.pdf',
+    pdfUrl: '/certificates/foundations-of-cybersecurity.pdf',
   },
   {
     slug: 'assets-threats-and-vulnerabilities',
-    title: 'Assets, threats, and vulnerabilities',
+    title: 'Assets, Threats, and Vulnerabilities',
     issuer: 'Google',
     issued: 'June 2024',
     credentialId: 'HD4Q2R954QN5',
@@ -849,7 +1167,7 @@ export const CERTIFICATES: CertificateEntry[] = [
   },
   {
     slug: 'play-it-safe-manage-security-risks',
-    title: 'Play it safe: Manage security risks',
+    title: 'Play It Safe: Manage Security Risks',
     issuer: 'Google',
     issued: 'June 2024',
     credentialId: 'CTFBFUY2ARB9',
@@ -860,7 +1178,7 @@ export const CERTIFICATES: CertificateEntry[] = [
   },
   {
     slug: 'connect-and-protect-networks-and-network-security',
-    title: 'Connect and protect: Networks and network security',
+    title: 'Connect and Protect: Networks and Network Security',
     issuer: 'Google',
     issued: 'June 2024',
     credentialId: 'T4AVSTSKBYM3',
@@ -871,7 +1189,7 @@ export const CERTIFICATES: CertificateEntry[] = [
   },
   {
     slug: 'tools-of-the-trade-linux-and-sql',
-    title: 'Tools of the trade: Linux and SQL',
+    title: 'Tools of the Trade: Linux and SQL',
     issuer: 'Google',
     issued: 'June 2024',
     credentialId: 'LANZAT7JXHFV',
@@ -882,7 +1200,7 @@ export const CERTIFICATES: CertificateEntry[] = [
   },
   {
     slug: 'sound-the-alarm-detection-and-response',
-    title: 'Sound the alarm: Detection and response',
+    title: 'Sound the Alarm: Detection and Response',
     issuer: 'Google',
     issued: 'July 2024',
     credentialId: 'NV6SV43HY9NG',
@@ -893,7 +1211,7 @@ export const CERTIFICATES: CertificateEntry[] = [
   },
   {
     slug: 'automate-cybersecurity-tasks-with-python',
-    title: 'Automate cybersecurity tasks with Python',
+    title: 'Automate Cybersecurity Tasks with Python',
     issuer: 'Google',
     issued: 'August 2024',
     credentialId: 'TKS7ROUWCJZL',
@@ -903,19 +1221,19 @@ export const CERTIFICATES: CertificateEntry[] = [
     pdfUrl: '/certificates/automate-cybersecurity-tasks-with-python.pdf',
   },
   {
-    slug: 'put-it-into-practice-prepare-for-cybersecurity-jobs',
-    title: 'Put it into practice: Prepare for cybersecurity jobs',
+    slug: 'put-it-to-work-prepare-for-cybersecurity-jobs',
+    title: 'Put It to Work: Prepare for Cybersecurity Jobs',
     issuer: 'Google',
     issued: 'August 2024',
     credentialId: 'WZ1K210UJ0SN',
     category: 'Cybersecurity professional programs',
     tags: ['Cybersecurity', 'Career readiness'],
     skills: ['cybersecurity'],
-    pdfUrl: '/certificates/put-it-into-practice-prepare-for-cybersecurity-jobs.pdf',
+    pdfUrl: '/certificates/put-it-to-work-prepare-for-cybersecurity-jobs.pdf',
   },
   {
     slug: 'advanced-git',
-    title: 'Advanced git',
+    title: 'Advanced Git',
     issuer: 'DataCamp',
     issued: 'June 2026',
     credentialId: '2fc52052ed6118b9f1ba54fbf6d33cecee78a95e',
@@ -937,7 +1255,7 @@ export const CERTIFICATES: CertificateEntry[] = [
   },
   {
     slug: 'intermediate-git',
-    title: 'Intermediate git',
+    title: 'Intermediate Git',
     issuer: 'DataCamp',
     issued: 'June 2026',
     credentialId: '2451e24c9df451ad80a91e57e918ff73d7a2f751',
@@ -959,7 +1277,7 @@ export const CERTIFICATES: CertificateEntry[] = [
   },
   {
     slug: 'introduction-to-git',
-    title: 'Introduction to git',
+    title: 'Introduction to Git',
     issuer: 'DataCamp',
     issued: 'June 2026',
     credentialId: '76e40f31fc82e27ec31afca61dea0244afcd5c3b',
@@ -999,7 +1317,6 @@ export const CERTIFICATES: CertificateEntry[] = [
     category: 'Python programming',
     tags: ['Python', 'Programming'],
     skills: ['python', 'programming'],
-    pdfUrl: '/certificates/introduction-to-programming-using-python.pdf',
   },
   {
     slug: 'project-management-and-agile-fundamentals',
@@ -1010,7 +1327,6 @@ export const CERTIFICATES: CertificateEntry[] = [
     category: 'Project management and methodology',
     tags: ['Project management', 'Agile'],
     skills: ['project-management', 'agile'],
-    pdfUrl: '/certificates/project-management-and-agile-fundamentals.pdf',
   },
 ]
 
@@ -1063,24 +1379,24 @@ export const PAPERS: PaperEntry[] = [
 ]
 
 export const SKILL_ASSETS: SkillAssetEntry[] = [
-  {
-    title: 'Service topology blueprint',
-    format: 'Architecture diagram',
-    summary: 'A compact system map used to explain boundaries, telemetry paths, and failure surfaces in distributed service environments.',
-    skills: ['software-architecture', 'distributed-systems', 'networking'],
-  },
-  {
-    title: 'Replication policy flow',
-    format: 'Research diagram',
-    summary: 'A visual walkthrough of how context-aware replication decisions react to concurrency changes and storage demand shifts.',
-    skills: ['distributed-systems', 'algorithms', 'networking'],
-  },
-  {
-    title: 'Desktop delivery checklist',
-    format: 'Implementation asset',
-    summary: 'A lightweight release checklist covering interface polish, packaging, and system integration for cross-platform desktop apps.',
-    skills: ['tauri', 'typescript', 'ui-design'],
-  },
+  // {
+  //   title: 'Service topology blueprint',
+  //   format: 'Architecture diagram',
+  //   summary: 'A compact system map used to explain boundaries, telemetry paths, and failure surfaces in distributed service environments.',
+  //   skills: ['software-architecture', 'distributed-systems', 'networking'],
+  // },
+  // {
+  //   title: 'Replication policy flow',
+  //   format: 'Research diagram',
+  //   summary: 'A visual walkthrough of how context-aware replication decisions react to concurrency changes and storage demand shifts.',
+  //   skills: ['distributed-systems', 'algorithms', 'networking'],
+  // },
+  // {
+  //   title: 'Desktop delivery checklist',
+  //   format: 'Implementation asset',
+  //   summary: 'A lightweight release checklist covering interface polish, packaging, and system integration for cross-platform desktop apps.',
+  //   skills: ['tauri', 'typescript', 'ui-design'],
+  // },
 ]
 
 export const ABOUT_SUMMARY = 'I design and build reliable software systems with a strong focus on architecture, security, and long-term maintainability. My work bridges industry delivery, research practice, and teaching, including experience as a professor guiding students through software engineering and computer science projects.'
@@ -1101,6 +1417,10 @@ export function getSkillBySlug (slug: string) {
 
 export function getProjectBySlug (slug: string) {
   return PROJECTS.find(project => project.slug === slug) ?? null
+}
+
+export function getPaperByDoi (doi: string) {
+  return PAPERS.find(paper => paper.doi === doi) ?? null
 }
 
 export function getProjectsByTitles (titles: string[]) {

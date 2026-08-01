@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { getTechnologyIcon } from '~~/utils/technologyIcons'
+
   const route = useRoute()
   const {
     getProjectBySlug,
@@ -193,9 +195,17 @@
                 <v-chip
                   v-for="technology in project.technologies"
                   :key="technology"
+                  class="project-page__technology-chip"
                   size="small"
                   variant="outlined"
                 >
+                  <v-icon
+                    aria-hidden="true"
+                    class="project-page__technology-icon"
+                    :icon="getTechnologyIcon(technology)"
+                    size="16"
+                  />
+
                   {{ technology }}
                 </v-chip>
               </div>
@@ -433,6 +443,15 @@
     display: grid;
     gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .project-page__technology-chip {
+    padding-inline: 10px 12px;
+  }
+
+  .project-page__technology-icon {
+    color: var(--portfolio-accent);
+    margin-inline-end: 6px;
   }
 
   @media (max-width: 960px) {

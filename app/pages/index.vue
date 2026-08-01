@@ -1,25 +1,18 @@
 <script setup lang="ts">
-  import type { BlogPreviewItem } from '@/components/BlogPreview.vue'
-
   const {
     certificates,
+    experience,
     navigationItems,
     papers,
     projectGroups,
     skillCategories,
   } = usePortfolioData()
 
-  const { data: blogPosts } = await useAsyncData<BlogPreviewItem[]>('home-blog-preview', async () => {
-    const posts = await queryCollection('blog').order('date', 'DESC').all()
+  const postsStore = usePostsStore()
+  const blogPosts = computed(() => postsStore.getLatestPosts(3))
 
-    return posts.slice(0, 3).map(post => ({
-      date: post.date,
-      description: post.description,
-      path: post.path,
-      readingTime: post.readingTime,
-      tags: post.tags,
-      title: post.title,
-    }))
+  onMounted(() => {
+    void postsStore.fetchLatestPosts(3)
   })
 
   useSeoMeta({
@@ -37,13 +30,13 @@
       <div class="section-stack">
         <PortfolioSection
           id="about"
-          description="A concise view of engineering focus, teaching experience, and the kind of systems work this site brings together."
+          description="A brief overview of my professional background, academic credentials, and areas of expertise in software engineering, distributed systems, and system design."
           eyebrow="Profile"
           title="About"
         >
           <v-card class="about-card glass-card pa-4 pa-sm-6 pa-md-8" rounded="xl">
             <p class="text-body-1 text-md-h6 text-medium-emphasis mb-0" style="line-height: 1.9;">
-              I am a <span class="font-weight-bold">software engineer</span> with a <span class="font-weight-bold">Master</span> and <span class="font-weight-bold">Ph.D. in engineering and computational technologies</span> from CINVESTAV. My work focuses on  distributed systems, software architecture, and system design, blending academic research with practical development experience.
+              I am a <SpecialText href="/12019146.pdf" class="font-weight-bold">software engineer</SpecialText> with a <SpecialText href="/13843522-C1.pdf" class="font-weight-bold">Master</SpecialText> and <SpecialText href="/#" class="font-weight-bold">Ph.D. </SpecialText>in engineering and computational technologies from Cinvestav. My work focuses on  distributed storage systems, software architecture, and system design, blending academic research with practical development experience.
               Throughout my career, I have worked across the entire lifecycle of software systems, managing projects from initial design to production deployment. 
               My professional background includes:
             </p>
@@ -66,8 +59,17 @@
         </PortfolioSection>
 
         <PortfolioSection
+          id="experience"
+          description="A chronological view of the professional roles and academic milestones that shaped my work in software architecture, distributed systems, testing, and research."
+          eyebrow="Career"
+          title="Experience"
+        >
+          <ExperienceTimeline :entries="experience" />
+        </PortfolioSection>
+
+        <PortfolioSection
           id="skills"
-          description="A structured view of core systems strengths, programming languages, delivery frameworks, and data platforms."
+          description="A structured view of core systems strengths, programming languages, frameworks, and data platforms."
           eyebrow="Capabilities"
           title="Skills matrix"
         >
@@ -103,7 +105,7 @@
 
         <PortfolioSection
           id="blog"
-          description="A markdown-backed technical writing space for architecture, systems, security, and engineering practice."
+          description="Check out my latest blog posts on software architecture, distributed systems, and engineering best practices."
           eyebrow="Writing"
           title="Blog module"
         >

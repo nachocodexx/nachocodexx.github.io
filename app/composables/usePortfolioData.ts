@@ -1,7 +1,9 @@
 import {
   ABOUT_SUMMARY,
   CERTIFICATES,
+  EXPERIENCE,
   getEntriesForSkill,
+  getPaperByDoi,
   getProjectBySlug,
   getProjectsByTitles,
   getSkillBySlug,
@@ -18,6 +20,8 @@ import {
 
 export type {
   CertificateEntry,
+  ExperienceEntry,
+  ExperienceThesis,
   NavigationItem,
   PaperEntry,
   ProjectEntry,
@@ -33,7 +37,9 @@ export function usePortfolioData () {
   return {
     aboutSummary: ABOUT_SUMMARY,
     certificates: CERTIFICATES,
+    experience: EXPERIENCE,
     getEntriesForSkill,
+    getPaperByDoi,
     getProjectBySlug,
     getProjectsByTitles,
     getSkillBySlug,

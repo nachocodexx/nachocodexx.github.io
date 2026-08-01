@@ -2,10 +2,17 @@
   import type { VForm } from 'vuetify/components'
 
   const contactStore = useContactStore()
-  const { email, message, name } = storeToRefs(contactStore)
+  const {
+    email,
+    message,
+    name,
+    snackbarColor,
+    snackbarMessage,
+    snackbarOpen,
+    submitPending,
+  } = storeToRefs(contactStore)
 
   const formRef = ref<VForm | null>(null)
-  const isSubmitting = ref(false)
 
   const requiredRule = (value: string) => value.trim().length > 0 || 'This field is required.'
   function emailRule (value: string) {
@@ -21,16 +28,19 @@
   }
 
   async function submitContactForm () {
-    isSubmitting.value = true
+    if (submitPending.value) {
+      return
+    }
 
     const { valid } = await formRef.value?.validate() ?? { valid: false }
 
     if (valid) {
-      contactStore.queueSubmission()
-      formRef.value?.resetValidation()
-    }
+      const submitted = await contactStore.submitMessage()
 
-    isSubmitting.value = false
+      if (submitted) {
+        formRef.value?.resetValidation()
+      }
+    }
   }
 </script>
 
@@ -117,7 +127,8 @@
         <v-btn
           class="text-none"
           color="primary"
-          :loading="isSubmitting"
+          :disabled="submitPending"
+          :loading="submitPending"
           prepend-icon="mdi-send-outline"
           rounded="xl"
           size="large"
@@ -126,21 +137,26 @@
           Submit message
         </v-btn>
       </v-form>
-
-      <v-alert
-        v-if="contactStore.hasQueuedSubmission"
-        class="mt-6"
-        closable
-        color="primary"
-        icon="mdi-information-outline"
-        title="Message saved locally"
-        variant="tonal"
-        @click:close="contactStore.dismissConfirmation()"
-      >
-        Email delivery is not connected yet. Your message is stored only for this browser session.
-      </v-alert>
     </v-card>
   </div>
+
+  <v-snackbar
+    v-model="snackbarOpen"
+    :color="snackbarColor"
+    location="bottom end"
+    :timeout="5000"
+  >
+    {{ snackbarMessage }}
+
+    <template #actions>
+      <v-btn
+        aria-label="Close contact form notification"
+        icon="mdi-close"
+        variant="text"
+        @click="contactStore.dismissSnackbar()"
+      />
+    </template>
+  </v-snackbar>
 </template>
 
 <style scoped>
