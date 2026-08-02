@@ -71,7 +71,7 @@
           id="skills"
           description="A structured view of core systems strengths, programming languages, frameworks, and data platforms."
           eyebrow="Capabilities"
-          title="Skills matrix"
+          title="Skills"
         >
           <SkillsMatrix :categories="skillCategories" />
         </PortfolioSection>
